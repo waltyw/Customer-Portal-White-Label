@@ -1,0 +1,41 @@
+Options -Indexes
+Options -ExecCGI
+
+# Route all requests through index.php
+RewriteEngine On
+RewriteBase /
+
+# Skip real files and directories
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Block access to hidden files
+RewriteRule ^\.(.*)$ - [F,L]
+
+RewriteRule ^ index.php [QSA,L]
+
+# Security headers
+<IfModule mod_headers.c>
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+</IfModule>
+
+# Block common attack patterns
+<IfModule mod_rewrite.c>
+    RewriteCond %{QUERY_STRING} (\.\./|\.\.\\) [NC,OR]
+    RewriteCond %{QUERY_STRING} (localhost|loopback|127\.0\.0\.1) [NC,OR]
+    RewriteCond %{QUERY_STRING} \b(union|select|insert|drop|delete|update)\b [NC]
+    RewriteRule ^ - [F,L]
+</IfModule>
+
+# Disable server signature
+ServerSignature Off
+
+# Prevent access to storage directory (double safety — storage is already outside web root)
+<FilesMatch "\.(env|log|sql|json|lock|md)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>

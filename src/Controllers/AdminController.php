@@ -1,0 +1,267 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+use App\Auth\Auth;
+use App\Core\Security;
+use App\Core\View;
+use App\Email\Mailer;
+use App\Models\Invoice;
+use App\Models\Ticket;
+use App\Models\User;
+
+class AdminController
+{
+    public function dashboard(): void
+    {
+        Auth::requireAdmin();
+        $ticketCounts  = Ticket::counts();
+        $invoiceCounts = Invoice::counts();
+        $recentTickets = array_slice(Ticket::all(), 0, 10);
+
+        View::render('admin/dashboard', [
+            'title'          => 'Admin Dashboard',
+            'ticketCounts'   => $ticketCounts,
+            'invoiceCounts'  => $invoiceCounts,
+            'recentTickets'  => $recentTickets,
+        ], 'admin');
+    }
+
+    // ── Customers ────────────────────────────────────────────────────────────
+
+    public function customers(): void
+    {
+        Auth::requireAdmin();
+        View::render('admin/customers', [
+            'title'     => 'Customers',
+            'customers' => User::customers(),
+        ], 'admin');
+    }
+
+    public function createCustomer(): void
+    {
+        Auth::requireAdmin();
+        View::render('admin/customer-create', ['title' => 'Add Customer'], 'admin');
+    }
+
+    public function storeCustomer(): void
+    {
+        Auth::requireAdmin();
+        Security::checkCsrf();
+
+        $email   = strtolower(trim($_POST['email'] ?? ''));
+        $name    = trim($_POST['name'] ?? '');
+        $company = trim($_POST['company'] ?? '');
+        $phone   = trim($_POST['phone'] ?? '');
+
+        if (!$email || !$name) {
+            Security::flash('error', 'Name and email are required.');
+            Security::redirect('/admin/customers/create');
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            Security::flash('error', 'Invalid email address.');
+            Security::redirect('/admin/customers/create');
+        }
+
+        if (User::findByEmail($email)) {
+            Security::flash('error', 'A customer with this email already exists.');
+            Security::redirect('/admin/customers/create');
+        }
+
+        $tempPassword = bin2hex(random_bytes(8));
+        $userId = User::create([
+            'email'    => $email,
+            'password' => $tempPassword,
+            'name'     => $name,
+            'company'  => $company,
+            'phone'    => $phone,
+        ]);
+
+        Mailer::sendWelcome(['email' => $email, 'name' => $name], $tempPassword);
+
+        Security::flash('success', "Customer {$name} created. Welcome email sent.");
+        Security::redirect('/admin/customers/' . $userId);
+    }
+
+    public function viewCustomer(int $id): void
+    {
+        Auth::requireAdmin();
+        $customer = User::find($id);
+        if (!$customer || $customer['role'] !== 'customer') {
+            Security::redirect('/admin/customers');
+        }
+
+        $stats    = User::stats($id);
+        $tickets  = Ticket::forUser($id);
+        $invoices = Invoice::forUser($id);
+
+        View::render('admin/customer-view', [
+            'title'    => $customer['name'],
+            'customer' => $customer,
+            'stats'    => $stats,
+            'tickets'  => $tickets,
+            'invoices' => $invoices,
+        ], 'admin');
+    }
+
+    public function toggleCustomer(int $id): void
+    {
+        Auth::requireAdmin();
+        Security::checkCsrf();
+        User::toggleActive($id);
+        Security::flash('success', 'Customer status updated.');
+        Security::redirect('/admin/customers/' . $id);
+    }
+
+    // ── Tickets ───────────────────────────────────────────────────────────────
+
+    public function tickets(): void
+    {
+        Auth::requireAdmin();
+        $filters = [];
+        if (!empty($_GET['status']))   $filters['status']   = $_GET['status'];
+        if (!empty($_GET['priority'])) $filters['priority'] = $_GET['priority'];
+
+        View::render('admin/tickets', [
+            'title'   => 'All Tickets',
+            'tickets' => Ticket::all($filters),
+            'filters' => $filters,
+        ], 'admin');
+    }
+
+    public function viewTicket(int $id): void
+    {
+        Auth::requireAdmin();
+        $ticket = Ticket::find($id);
+        if (!$ticket) Security::redirect('/admin/tickets');
+
+        $messages = Ticket::messages($id, true);
+
+        View::render('admin/ticket-view', [
+            'title'    => "Ticket #{$ticket['reference']}",
+            'ticket'   => $ticket,
+            'messages' => $messages,
+        ], 'admin');
+    }
+
+    public function replyTicket(int $id): void
+    {
+        Auth::requireAdmin();
+        Security::checkCsrf();
+
+        $ticket  = Ticket::find($id);
+        if (!$ticket) Security::redirect('/admin/tickets');
+
+        $message    = trim($_POST['message'] ?? '');
+        $isInternal = isset($_POST['internal']);
+
+        if (!$message) {
+            Security::flash('error', 'Reply cannot be empty.');
+            Security::redirect('/admin/tickets/' . $id);
+        }
+
+        Ticket::addMessage($id, Auth::id(), $message, $isInternal);
+
+        if (!$isInternal) {
+            Ticket::updateStatus($id, 'waiting_customer');
+            $customer = User::find($ticket['user_id']);
+            if ($customer) {
+                Mailer::sendTicketReply(
+                    $ticket,
+                    ['message' => $message, 'sender_name' => Auth::user()['name']],
+                    $customer,
+                    true
+                );
+            }
+        }
+
+        Security::flash('success', $isInternal ? 'Internal note added.' : 'Reply sent to customer.');
+        Security::redirect('/admin/tickets/' . $id);
+    }
+
+    public function updateTicketStatus(int $id): void
+    {
+        Auth::requireAdmin();
+        Security::checkCsrf();
+
+        $status = $_POST['status'] ?? '';
+        if (!in_array($status, ['open', 'in_progress', 'waiting_customer', 'resolved', 'closed'])) {
+            Security::redirect('/admin/tickets/' . $id);
+        }
+
+        Ticket::updateStatus($id, $status);
+        Security::flash('success', 'Status updated.');
+        Security::redirect('/admin/tickets/' . $id);
+    }
+
+    // ── Invoices ─────────────────────────────────────────────────────────────
+
+    public function invoices(): void
+    {
+        Auth::requireAdmin();
+        Invoice::updateOverdue();
+        View::render('admin/invoices', [
+            'title'    => 'Invoices',
+            'invoices' => Invoice::all(),
+        ], 'admin');
+    }
+
+    public function createInvoice(): void
+    {
+        Auth::requireAdmin();
+        View::render('admin/invoice-create', [
+            'title'     => 'Create Invoice',
+            'customers' => User::customers(),
+            'nextNum'   => Invoice::nextNumber(),
+        ], 'admin');
+    }
+
+    public function storeInvoice(): void
+    {
+        Auth::requireAdmin();
+        Security::checkCsrf();
+
+        $userId    = (int)($_POST['user_id'] ?? 0);
+        $lineItems = [];
+
+        $descriptions = $_POST['item_desc'] ?? [];
+        $qtys         = $_POST['item_qty'] ?? [];
+        $prices       = $_POST['item_price'] ?? [];
+
+        foreach ($descriptions as $i => $desc) {
+            if (trim($desc) && isset($qtys[$i], $prices[$i])) {
+                $lineItems[] = [
+                    'description' => trim($desc),
+                    'qty'         => (float)$qtys[$i],
+                    'unit_price'  => (float)$prices[$i],
+                ];
+            }
+        }
+
+        if (!$userId || !$lineItems) {
+            Security::flash('error', 'Customer and at least one line item are required.');
+            Security::redirect('/admin/invoices/create');
+        }
+
+        $invoiceId = Invoice::create([
+            'user_id'        => $userId,
+            'invoice_number' => $_POST['invoice_number'] ?? Invoice::nextNumber(),
+            'vat_rate'       => (float)($_POST['vat_rate'] ?? 20),
+            'due_date'       => $_POST['due_date'] ?? null,
+            'notes'          => trim($_POST['notes'] ?? ''),
+            'line_items'     => $lineItems,
+        ]);
+
+        if (isset($_POST['send_email'])) {
+            $invoice  = Invoice::find($invoiceId);
+            $customer = User::find($userId);
+            if ($invoice && $customer) Mailer::sendInvoiceReady($invoice, $customer);
+        }
+
+        Security::flash('success', 'Invoice created.');
+        Security::redirect('/admin/invoices');
+    }
+}
