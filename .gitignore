@@ -1,5 +1,6 @@
 .env
 vendor/
+*.db
 storage/logs/*
 storage/attachments/*
 !storage/logs/.gitkeep
