@@ -1,4 +1,4 @@
-# Deployment Guide — customer-portal.beebizzi.co.uk
+# Deployment Guide — portal.bbizzi.co.uk
 
 ## Server Requirements
 - PHP 8.1+
@@ -28,7 +28,7 @@ Recommended structure on the server:
       assets/
 ```
 
-Or, if `customer-portal.beebizzi.co.uk` has its own document root in WHM:
+Or, if `portal.bbizzi.co.uk` has its own document root in WHM:
 - Set document root to `/home/yourusername/customer-portal/public`
 - Keep everything else at `/home/yourusername/customer-portal/`
 
@@ -65,12 +65,12 @@ chmod 600 .env
 
 ### 6. Configure Stripe Webhook
 In your Stripe Dashboard → Developers → Webhooks:
-- Add endpoint: `https://customer-portal.beebizzi.co.uk/webhook/stripe`
+- Add endpoint: `https://portal.bbizzi.co.uk/webhook/stripe`
 - Events to listen: `checkout.session.completed`
 - Copy the webhook signing secret into `.env` as `STRIPE_WEBHOOK_SECRET`
 
 ### 7. First login
-- URL: https://customer-portal.beebizzi.co.uk/login
+- URL: https://portal.bbizzi.co.uk/login
 - Email: admin@beebizzi.co.uk
 - Password: **ChangeMe123!**  ← CHANGE THIS IMMEDIATELY
 
@@ -83,7 +83,7 @@ UPDATE users SET password_hash = '$2y$12$...' WHERE email = 'admin@beebizzi.co.u
 ## Security Checklist
 - [ ] HTTPS enabled (required — Stripe won't work without it)
 - [ ] Admin password changed from default
-- [ ] .env file not accessible via web (verify: curl https://customer-portal.beebizzi.co.uk/.env returns 403)
+- [ ] .env file not accessible via web (verify: curl https://portal.bbizzi.co.uk/.env returns 403)
 - [ ] storage/ directory not accessible via web
 - [ ] Stripe webhook secret set in .env
 - [ ] APP_DEBUG=false in production
