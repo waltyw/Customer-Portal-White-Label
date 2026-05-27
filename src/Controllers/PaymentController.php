@@ -6,11 +6,10 @@ namespace App\Controllers;
 
 use App\Auth\Auth;
 use App\Core\Security;
+use App\Core\Stripe;
 use App\Core\View;
 use App\Models\Invoice;
 use App\Models\Payment;
-use Stripe\Checkout\Session as StripeSession;
-use Stripe\Exception\ApiErrorException;
 
 class PaymentController
 {
@@ -48,46 +47,46 @@ class PaymentController
             Security::redirect('/invoices');
         }
 
-        $user     = Auth::user();
+        $user      = Auth::user();
         $amountGbp = (float)$invoice['amount_due'];
 
         try {
-            $session = StripeSession::create([
+            $session = Stripe::createCheckoutSession([
                 'payment_method_types' => ['card'],
                 'line_items' => [[
                     'price_data' => [
                         'currency'     => strtolower($invoice['currency']),
                         'unit_amount'  => (int)round($amountGbp * 100),
                         'product_data' => [
-                            'name' => 'Invoice ' . $invoice['invoice_number'],
-                            'description' => 'Payment to Beebizzi — Invoice ' . $invoice['invoice_number'],
+                            'name'        => 'Invoice ' . $invoice['invoice_number'],
+                            'description' => 'Payment to Beebizzi',
                         ],
                     ],
                     'quantity' => 1,
                 ]],
-                'mode'       => 'payment',
-                'customer_email' => $user['email'],
-                'success_url'    => $_ENV['APP_URL'] . '/payment/success?session_id={CHECKOUT_SESSION_ID}',
-                'cancel_url'     => $_ENV['APP_URL'] . '/invoices/' . $invoiceId,
-                'metadata' => [
+                'mode'          => 'payment',
+                'customer_email'=> $user['email'],
+                'success_url'   => $_ENV['APP_URL'] . '/payment/success?session_id={CHECKOUT_SESSION_ID}',
+                'cancel_url'    => $_ENV['APP_URL'] . '/invoices/' . $invoiceId,
+                'metadata'      => [
                     'invoice_id' => $invoiceId,
                     'user_id'    => Auth::id(),
                 ],
             ]);
 
             Payment::create([
-                'user_id'          => Auth::id(),
-                'invoice_id'       => $invoiceId,
-                'stripe_session_id'=> $session->id,
-                'amount'           => $amountGbp,
-                'currency'         => $invoice['currency'],
-                'method'           => 'stripe',
-                'status'           => 'pending',
+                'user_id'           => Auth::id(),
+                'invoice_id'        => $invoiceId,
+                'stripe_session_id' => $session['id'],
+                'amount'            => $amountGbp,
+                'currency'          => $invoice['currency'],
+                'method'            => 'stripe',
+                'status'            => 'pending',
             ]);
 
-            Security::redirect($session->url);
+            Security::redirect($session['url']);
 
-        } catch (ApiErrorException $e) {
+        } catch (\RuntimeException $e) {
             error_log('Stripe error: ' . $e->getMessage());
             Security::flash('error', 'Payment could not be started. Please try again or contact support.');
             Security::redirect('/invoices/' . $invoiceId . '/pay');

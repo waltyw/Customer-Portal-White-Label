@@ -2,21 +2,32 @@
 
 declare(strict_types=1);
 
-// Load Composer autoloader
-require_once dirname(__DIR__) . '/vendor/autoload.php';
+// ── Autoloader (PSR-4 for App\ namespace, no Composer needed) ────────────────
+spl_autoload_register(function (string $class): void {
+    if (!str_starts_with($class, 'App\\')) return;
+    $rel  = str_replace(['App\\', '\\'], ['', '/'], $class);
+    $file = dirname(__DIR__) . '/src/' . $rel . '.php';
+    if (is_file($file)) require_once $file;
+});
 
-// Load environment variables
-$dotenv = Dotenv\Dotenv::createImmutable(dirname(__DIR__));
-$dotenv->load();
-$dotenv->required([
+// ── PHPMailer (standalone — no Composer) ─────────────────────────────────────
+require_once dirname(__DIR__) . '/vendor-standalone/PHPMailer/Exception.php';
+require_once dirname(__DIR__) . '/vendor-standalone/PHPMailer/PHPMailer.php';
+require_once dirname(__DIR__) . '/vendor-standalone/PHPMailer/SMTP.php';
+
+// ── Load .env ────────────────────────────────────────────────────────────────
+use App\Core\EnvLoader;
+
+EnvLoader::load(dirname(__DIR__) . '/.env');
+EnvLoader::require([
     'DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASS',
     'SMTP_HOST', 'SMTP_USER', 'SMTP_PASS',
     'STRIPE_SECRET_KEY', 'STRIPE_PUBLISHABLE_KEY', 'STRIPE_WEBHOOK_SECRET',
     'APP_KEY',
 ]);
 
-// Session configuration — must be set before session_start()
-$sessionName = $_ENV['SESSION_NAME'] ?? 'bbz_portal';
+// ── Session ───────────────────────────────────────────────────────────────────
+$sessionName     = $_ENV['SESSION_NAME'] ?? 'bbz_portal';
 $sessionLifetime = (int)($_ENV['SESSION_LIFETIME'] ?? 7200);
 
 ini_set('session.cookie_httponly', '1');
@@ -26,8 +37,8 @@ ini_set('session.gc_maxlifetime', (string)$sessionLifetime);
 ini_set('session.use_strict_mode', '1');
 session_name($sessionName);
 
-// Error handling
-if ($_ENV['APP_DEBUG'] === 'true') {
+// ── Error handling ────────────────────────────────────────────────────────────
+if (($_ENV['APP_DEBUG'] ?? 'false') === 'true') {
     error_reporting(E_ALL);
     ini_set('display_errors', '1');
 } else {
@@ -37,9 +48,4 @@ if ($_ENV['APP_DEBUG'] === 'true') {
     ini_set('error_log', dirname(__DIR__) . '/storage/logs/php_errors.log');
 }
 
-// Timezone
 date_default_timezone_set('Europe/London');
-
-// Stripe SDK init
-\Stripe\Stripe::setApiKey($_ENV['STRIPE_SECRET_KEY']);
-\Stripe\Stripe::setApiVersion('2024-11-20.acacia');

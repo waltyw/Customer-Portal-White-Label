@@ -1,4 +1,6 @@
 .env
+*Copy.env
+*.zip
 vendor/
 *.db
 storage/logs/*
