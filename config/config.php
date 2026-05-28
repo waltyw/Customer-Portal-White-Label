@@ -19,10 +19,9 @@ require_once dirname(__DIR__) . '/vendor-standalone/PHPMailer/SMTP.php';
 use App\Core\EnvLoader;
 
 EnvLoader::load(dirname(__DIR__) . '/.env');
+// Core requirements — app won't work without these
 EnvLoader::require([
     'DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASS',
-    'SMTP_HOST', 'SMTP_USER', 'SMTP_PASS',
-    'STRIPE_SECRET_KEY', 'STRIPE_PUBLISHABLE_KEY', 'STRIPE_WEBHOOK_SECRET',
     'APP_KEY',
 ]);
 
