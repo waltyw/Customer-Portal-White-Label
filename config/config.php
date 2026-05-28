@@ -22,7 +22,6 @@ EnvLoader::load(dirname(__DIR__) . '/.env');
 // Core requirements — app won't work without these
 EnvLoader::require([
     'DB_HOST', 'DB_NAME', 'DB_USER', 'DB_PASS',
-    'APP_KEY',
 ]);
 
 // ── Session ───────────────────────────────────────────────────────────────────
