@@ -14,12 +14,13 @@ class Mailer
     {
         $mail = new PHPMailer(true);
         $mail->isSMTP();
-        $mail->Host       = $_ENV['SMTP_HOST'];
+        $mail->Host       = $_ENV['SMTP_HOST'] ?? '';
         $mail->SMTPAuth   = true;
-        $mail->Username   = $_ENV['SMTP_USER'];
-        $mail->Password   = $_ENV['SMTP_PASS'];
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = (int)$_ENV['SMTP_PORT'];
+        $mail->Username   = $_ENV['SMTP_USER'] ?? '';
+        $mail->Password   = $_ENV['SMTP_PASS'] ?? '';
+        $mail->Port       = (int)($_ENV['SMTP_PORT'] ?? 465);
+        // Port 465 = implicit SSL, port 587 = STARTTLS
+        $mail->SMTPSecure = ($mail->Port === 465) ? 'ssl' : PHPMailer::ENCRYPTION_STARTTLS;
         $mail->CharSet    = 'UTF-8';
         $mail->setFrom($_ENV['SMTP_FROM_EMAIL'], $_ENV['SMTP_FROM_NAME']);
         return $mail;
