@@ -16,8 +16,7 @@ $user = \App\Auth\Auth::user();
 <div class="layout">
     <aside class="sidebar sidebar-admin">
         <div class="sidebar-brand">
-            <div class="sidebar-logo">B</div>
-            <span>Admin</span>
+            <a href="/admin"><img src="/assets/img/logo.png" alt="Beebizzi" class="sidebar-logo-img"></a>
         </div>
         <nav class="sidebar-nav">
             <a href="/admin" class="nav-item <?= $currentPath === '/admin' ? 'active' : '' ?>">

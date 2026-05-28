@@ -13,7 +13,7 @@
 <div class="auth-container">
     <div class="auth-card">
         <div class="auth-header">
-            <div class="auth-logo">B</div>
+            <img src="/assets/img/logo.png" alt="Beebizzi" class="auth-logo-img">
             <h1>New Password</h1>
             <p>Choose a strong password (min. 10 characters)</p>
         </div>

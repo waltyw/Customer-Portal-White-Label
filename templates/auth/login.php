@@ -13,8 +13,7 @@
 <div class="auth-container">
     <div class="auth-card">
         <div class="auth-header">
-            <div class="auth-logo">B</div>
-            <h1><?= \App\Core\Security::e($_ENV['APP_NAME'] ?? 'Customer Portal') ?></h1>
+            <img src="/assets/img/logo.png" alt="Beebizzi" class="auth-logo-img">
             <p>Sign in to your account</p>
         </div>
 
