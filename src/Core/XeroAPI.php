@@ -11,7 +11,7 @@ class XeroAPI
     private const AUTH_URL  = 'https://login.xero.com/identity/connect/authorize';
     private const TOKEN_URL = 'https://identity.xero.com/connect/token';
     private const API_BASE  = 'https://api.xero.com/api.xro/2.0';
-    private const SCOPE     = 'openid profile email accounting.transactions accounting.contacts offline_access';
+    private const SCOPE     = 'openid offline_access accounting.transactions accounting.contacts';
 
     // ── OAuth ────────────────────────────────────────────────────────────────
 
@@ -20,13 +20,19 @@ class XeroAPI
         $state = bin2hex(random_bytes(16));
         Setting::set('xero_oauth_state', $state);
 
-        return self::AUTH_URL . '?' . http_build_query([
+        // Build manually so scope uses %20 not + between values
+        $params = http_build_query([
             'response_type' => 'code',
             'client_id'     => Setting::get('xero_client_id'),
             'redirect_uri'  => Setting::get('xero_redirect_uri'),
             'scope'         => self::SCOPE,
             'state'         => $state,
         ]);
+
+        // Xero requires %20 not + in scope
+        $params = str_replace('+', '%20', $params);
+
+        return self::AUTH_URL . '?' . $params;
     }
 
     public static function exchangeCode(string $code, string $state): bool
