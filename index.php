@@ -14,6 +14,7 @@ use App\Controllers\InvoiceController;
 use App\Controllers\PaymentController;
 use App\Controllers\WebhookController;
 use App\Controllers\AdminController;
+use App\Controllers\AccountController;
 use App\Controllers\HelpController;
 
 // Stripe webhook must read raw body before session/output start
@@ -49,6 +50,8 @@ $routes = [
     'GET /tickets/create'          => [TicketController::class,    'create'],
     'POST /tickets/create'         => [TicketController::class,    'store'],
     'GET /invoices'                => [InvoiceController::class,   'index'],
+    'GET /account'                 => [AccountController::class,   'index'],
+    'POST /account'                => [AccountController::class,   'update'],
     'GET /help'                    => [HelpController::class,      'index'],
     'GET /payment/success'         => [PaymentController::class,   'success'],
     'GET /payment/cancelled'       => [PaymentController::class,   'cancelled'],
@@ -80,6 +83,7 @@ $dynamicRoutes = [
     '#^GET /invoices/(\d+)/pay$#'           => [PaymentController::class, 'showPay'],
     '#^POST /invoices/(\d+)/pay$#'          => [PaymentController::class, 'processStripe'],
     '#^GET /admin/customers/(\d+)$#'        => [AdminController::class,   'viewCustomer'],
+    '#^POST /admin/customers/(\d+)/update$#'=> [AdminController::class,   'updateCustomer'],
     '#^POST /admin/customers/(\d+)/toggle$#'=> [AdminController::class,   'toggleCustomer'],
     '#^GET /admin/tickets/(\d+)$#'          => [AdminController::class,   'viewTicket'],
     '#^POST /admin/tickets/(\d+)/reply$#'   => [AdminController::class,   'replyTicket'],

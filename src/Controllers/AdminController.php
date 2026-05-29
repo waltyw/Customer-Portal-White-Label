@@ -165,6 +165,29 @@ class AdminController
         ], 'admin');
     }
 
+    public function updateCustomer(int $id): void
+    {
+        Auth::requireAdmin();
+        Security::checkCsrf();
+
+        $name = trim($_POST['name'] ?? '');
+        if (!$name) {
+            Security::flash('error', 'Name cannot be empty.');
+            Security::redirect('/admin/customers/' . $id);
+        }
+
+        User::update($id, [
+            'name'        => $name,
+            'company'     => trim($_POST['company'] ?? ''),
+            'phone'       => trim($_POST['phone'] ?? ''),
+            'website_url' => trim($_POST['website_url'] ?? ''),
+            'is_active'   => 1,
+        ]);
+
+        Security::flash('success', 'Customer details updated.');
+        Security::redirect('/admin/customers/' . $id);
+    }
+
     public function toggleCustomer(int $id): void
     {
         Auth::requireAdmin();

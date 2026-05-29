@@ -36,23 +36,62 @@
 
 <div class="grid-2">
     <div class="card">
-        <div class="card-header"><h2>Customer Details</h2></div>
-        <div class="card-body">
+        <div class="card-header">
+            <h2>Customer Details</h2>
+            <button class="btn btn-sm btn-outline" onclick="toggleEdit()">Edit</button>
+        </div>
+
+        <!-- View mode -->
+        <div id="view-details" class="card-body">
             <table style="width:100%;font-size:14px;">
-                <tr><td style="color:#64748b;padding:6px 0;width:40%;">Company</td><td><?= Security::e($customer['company'] ?? '—') ?></td></tr>
+                <tr><td style="color:#64748b;padding:6px 0;width:40%;">Name</td><td><?= Security::e($customer['name']) ?></td></tr>
+                <tr><td style="color:#64748b;padding:6px 0;">Company</td><td><?= Security::e($customer['company'] ?? '—') ?></td></tr>
                 <tr><td style="color:#64748b;padding:6px 0;">Phone</td><td><?= Security::e($customer['phone'] ?? '—') ?></td></tr>
                 <tr><td style="color:#64748b;padding:6px 0;">Website</td><td>
                     <?php if ($customer['website_url']): ?>
                         <a href="<?= Security::e($customer['website_url']) ?>" target="_blank" rel="noopener"><?= Security::e($customer['website_url']) ?></a>
-                    <?php else: ?>—<?php endif; ?>
+                    <?php else: ?><span style="color:#94a3b8;">Not set</span><?php endif; ?>
                 </td></tr>
                 <tr><td style="color:#64748b;padding:6px 0;">Mail Server</td><td>
                     <?php $ms = \App\Models\User::mailServer($customer['website_url'] ?? null); ?>
-                    <?= $ms ? Security::e($ms) : '—' ?>
+                    <?= $ms ? Security::e($ms) : '<span style="color:#94a3b8;">—</span>' ?>
                 </td></tr>
                 <tr><td style="color:#64748b;padding:6px 0;">Status</td><td><span class="badge <?= $customer['is_active'] ? 'badge-active' : 'badge-inactive' ?>"><?= $customer['is_active'] ? 'Active' : 'Inactive' ?></span></td></tr>
                 <tr><td style="color:#64748b;padding:6px 0;">Member Since</td><td><?= date('j F Y', strtotime($customer['created_at'])) ?></td></tr>
             </table>
+        </div>
+
+        <!-- Edit mode -->
+        <div id="edit-details" style="display:none;">
+            <form method="POST" action="/admin/customers/<?= $customer['id'] ?>/update">
+                <?= Security::csrfField() ?>
+                <div class="card-body" style="padding-bottom:0;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" name="name" required value="<?= Security::e($customer['name']) ?>">
+                        </div>
+                        <div class="form-group">
+                            <label>Company</label>
+                            <input type="text" name="company" value="<?= Security::e($customer['company'] ?? '') ?>">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="text" name="phone" value="<?= Security::e($customer['phone'] ?? '') ?>">
+                        </div>
+                        <div class="form-group">
+                            <label>Website URL</label>
+                            <input type="text" name="website_url" value="<?= Security::e($customer['website_url'] ?? '') ?>" placeholder="https://theirdomain.co.uk">
+                        </div>
+                    </div>
+                </div>
+                <div style="padding:12px 20px;border-top:1px solid #f1f5f9;display:flex;gap:10px;">
+                    <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="toggleEdit()">Cancel</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -76,6 +115,15 @@
         <?php endif; ?>
     </div>
 </div>
+
+<script>
+function toggleEdit() {
+    const view = document.getElementById('view-details');
+    const edit = document.getElementById('edit-details');
+    view.style.display = view.style.display === 'none' ? '' : 'none';
+    edit.style.display = edit.style.display === 'none' ? '' : 'none';
+}
+</script>
 
 <!-- Invoices -->
 <div class="card p-0" style="margin-top:16px;">
