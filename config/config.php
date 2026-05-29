@@ -30,7 +30,7 @@ $sessionLifetime = (int)($_ENV['SESSION_LIFETIME'] ?? 7200);
 
 ini_set('session.cookie_httponly', '1');
 ini_set('session.cookie_secure', '1');
-ini_set('session.cookie_samesite', 'Strict');
+ini_set('session.cookie_samesite', 'Lax'); // Lax allows session to survive OAuth redirects from Xero/Stripe
 ini_set('session.gc_maxlifetime', (string)$sessionLifetime);
 ini_set('session.use_strict_mode', '1');
 session_name($sessionName);
