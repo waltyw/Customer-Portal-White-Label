@@ -23,6 +23,8 @@ class Setting
         'card_bg'        => '#ffffff',
         'support_email'        => '',
         'logo_ext'             => 'png',
+        'favicon_ext'          => 'png',
+        'currency_symbol'      => '£',
         'xero_client_id'       => '',
         'xero_client_secret'   => '',
         'xero_redirect_uri'    => '',

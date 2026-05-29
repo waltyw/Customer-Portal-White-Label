@@ -46,12 +46,13 @@ $worst    = $overallStatus;
             <div class="stat-label">Unpaid Invoices</div>
         </div>
     </div>
+    <?php $currency = \App\Models\Setting::get('currency_symbol') ?: '£'; ?>
     <div class="stat-card">
-        <div class="stat-icon" style="background:#fef2f2;color:#dc2626;">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        <div class="stat-icon" style="background:#fef2f2;color:#dc2626;font-size:22px;font-weight:800;font-family:Georgia,serif;">
+            <?= htmlspecialchars($currency) ?>
         </div>
         <div class="stat-body">
-            <div class="stat-value">£<?= number_format((float)($stats['amount_outstanding'] ?? 0), 2) ?></div>
+            <div class="stat-value"><?= htmlspecialchars($currency) ?><?= number_format((float)($stats['amount_outstanding'] ?? 0), 2) ?></div>
             <div class="stat-label">Outstanding Balance</div>
         </div>
     </div>

@@ -8,6 +8,7 @@ use App\Auth\Auth;
 use App\Core\Security;
 use App\Core\View;
 use App\Email\Mailer;
+use App\Models\Faq;
 use App\Models\Invoice;
 use App\Models\ServiceStatus;
 use App\Models\Setting;
@@ -550,6 +551,73 @@ class AdminController
         Security::redirect('/admin/service-status');
     }
 
+    // ── FAQs ──────────────────────────────────────────────────────────────────
+
+    public function faqs(): void
+    {
+        Auth::requireAdmin();
+        View::render('admin/faqs', [
+            'title' => 'Manage FAQs',
+            'faqs'  => Faq::all(),
+        ], 'admin');
+    }
+
+    public function storeFaq(): void
+    {
+        Auth::requireAdmin();
+        Security::checkCsrf();
+
+        $question = trim($_POST['question'] ?? '');
+        $answer   = trim($_POST['answer'] ?? '');
+
+        if (!$question || !$answer) {
+            Security::flash('error', 'Question and answer are both required.');
+            Security::redirect('/admin/faqs');
+        }
+
+        Faq::create($question, $answer, Faq::nextOrder());
+        Security::flash('success', 'FAQ added.');
+        Security::redirect('/admin/faqs');
+    }
+
+    public function editFaq(int $id): void
+    {
+        Auth::requireAdmin();
+        $faq = Faq::find($id);
+        if (!$faq) Security::redirect('/admin/faqs');
+
+        View::render('admin/faq-edit', [
+            'title' => 'Edit FAQ',
+            'faq'   => $faq,
+        ], 'admin');
+    }
+
+    public function updateFaq(int $id): void
+    {
+        Auth::requireAdmin();
+        Security::checkCsrf();
+
+        Faq::update(
+            $id,
+            trim($_POST['question'] ?? ''),
+            trim($_POST['answer'] ?? ''),
+            (int)($_POST['sort_order'] ?? 0),
+            isset($_POST['is_active'])
+        );
+
+        Security::flash('success', 'FAQ updated.');
+        Security::redirect('/admin/faqs');
+    }
+
+    public function deleteFaq(int $id): void
+    {
+        Auth::requireAdmin();
+        Security::checkCsrf();
+        Faq::delete($id);
+        Security::flash('success', 'FAQ deleted.');
+        Security::redirect('/admin/faqs');
+    }
+
     // ── Settings ──────────────────────────────────────────────────────────────
 
     public function settings(): void
@@ -567,18 +635,31 @@ class AdminController
         Security::checkCsrf();
 
         Setting::saveMany([
-            'app_name'      => trim($_POST['app_name'] ?? ''),
-            'primary_color' => $_POST['primary_color'] ?? '#2563eb',
-            'primary_dark'  => $_POST['primary_dark']  ?? '#1d4ed8',
-            'sidebar_bg'    => $_POST['sidebar_bg']    ?? '#0f172a',
-            'sidebar_text'  => $_POST['sidebar_text']  ?? '#94a3b8',
-            'sidebar_active'=> $_POST['sidebar_active']?? '#2563eb',
-            'body_bg'       => $_POST['body_bg']       ?? '#f8fafc',
-            'text_color'    => $_POST['text_color']    ?? '#1e293b',
-            'text_muted'    => $_POST['text_muted']    ?? '#64748b',
-            'card_bg'       => $_POST['card_bg']       ?? '#ffffff',
-            'support_email' => trim($_POST['support_email'] ?? ''),
+            'app_name'        => trim($_POST['app_name'] ?? ''),
+            'primary_color'   => $_POST['primary_color']   ?? '#2563eb',
+            'primary_dark'    => $_POST['primary_dark']    ?? '#1d4ed8',
+            'sidebar_bg'      => $_POST['sidebar_bg']      ?? '#0f172a',
+            'sidebar_text'    => $_POST['sidebar_text']    ?? '#94a3b8',
+            'sidebar_active'  => $_POST['sidebar_active']  ?? '#2563eb',
+            'body_bg'         => $_POST['body_bg']         ?? '#f8fafc',
+            'text_color'      => $_POST['text_color']      ?? '#1e293b',
+            'text_muted'      => $_POST['text_muted']      ?? '#64748b',
+            'card_bg'         => $_POST['card_bg']         ?? '#ffffff',
+            'support_email'   => trim($_POST['support_email'] ?? ''),
+            'currency_symbol' => trim($_POST['currency_symbol'] ?? '£') ?: '£',
         ]);
+
+        // Handle favicon upload
+        if (!empty($_FILES['favicon']['name']) && $_FILES['favicon']['error'] === UPLOAD_ERR_OK) {
+            $ext     = strtolower(pathinfo($_FILES['favicon']['name'], PATHINFO_EXTENSION));
+            $allowed = ['png', 'jpg', 'ico', 'svg'];
+            if (in_array($ext, $allowed) && $_FILES['favicon']['size'] <= 524288) {
+                $dest = dirname(__DIR__, 3) . '/public/assets/img/favicon.' . $ext;
+                if (move_uploaded_file($_FILES['favicon']['tmp_name'], $dest)) {
+                    Setting::set('favicon_ext', $ext);
+                }
+            }
+        }
 
         // Handle logo upload
         if (!empty($_FILES['logo']['name']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK) {

@@ -4,6 +4,10 @@ use App\Models\ServiceStatus;
 ?>
 <div class="page-header">
     <h1>Help &amp; Email Setup Guides</h1>
+    <a href="#raise-ticket" class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Raise a Support Ticket
+    </a>
 </div>
 
 <!-- Service Status Board -->
@@ -296,8 +300,30 @@ $icons = ['operational'=>'✅','degraded'=>'⚠️','outage'=>'🔴','maintenanc
 
 </div>
 
+<!-- Custom FAQs from admin -->
+<?php if (!empty($faqs)): ?>
+<div class="faq-list" style="margin-top:8px;">
+    <?php foreach ($faqs as $faq): ?>
+    <div class="faq-item">
+        <button class="faq-trigger" onclick="toggleFaq(this)">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div class="faq-icon" style="background:#f1f5f9;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                </div>
+                <div style="font-weight:600;"><?= Security::e($faq['question']) ?></div>
+            </div>
+            <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="faq-body">
+            <p style="font-size:14px;color:#374151;line-height:1.7;"><?= nl2br(Security::e($faq['answer'])) ?></p>
+        </div>
+    </div>
+    <?php endforeach; ?>
+</div>
+<?php endif; ?>
+
 <!-- Still need help? -->
-<div class="card" style="margin-top:24px;text-align:center;">
+<div class="card" id="raise-ticket" style="margin-top:24px;text-align:center;">
     <div class="card-body">
         <h2 style="margin-bottom:8px;">Still need help?</h2>
         <p style="color:#64748b;margin-bottom:20px;">Our support team is happy to walk you through the setup over a call or via ticket.</p>

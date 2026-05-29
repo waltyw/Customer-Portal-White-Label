@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Auth\Auth;
 use App\Core\View;
+use App\Models\Faq;
 use App\Models\ServiceStatus;
 use App\Models\User;
 
@@ -26,6 +27,7 @@ class HelpController
             'services'      => $services,
             'overallStatus' => ServiceStatus::overallStatus($services),
             'hasIssues'     => ServiceStatus::hasIssues($services),
+            'faqs'          => Faq::all(true),
         ]);
     }
 }

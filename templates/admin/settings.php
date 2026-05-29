@@ -25,16 +25,34 @@
                             <input type="email" name="support_email" value="<?= Security::e($settings['support_email'] ?? '') ?>" placeholder="support@yourdomain.com">
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label>Logo <span class="hint">(PNG, JPG, SVG or WebP — max 2MB)</span></label>
-                        <div style="display:flex;align-items:center;gap:16px;margin-bottom:10px;">
-                            <img src="/assets/img/logo.<?= Security::e($settings['logo_ext'] ?? 'png') ?>"
-                                 alt="Current logo"
-                                 style="height:36px;width:auto;background:#f1f5f9;padding:5px 10px;border-radius:8px;border:1px solid #e2e8f0;">
-                            <span style="font-size:12px;color:#94a3b8;">Current logo</span>
+                    <div class="form-row">
+                        <div class="form-group" style="flex:3;">
+                            <label>Logo <span class="hint">(PNG, JPG, SVG or WebP — max 2MB)</span></label>
+                            <div style="display:flex;align-items:center;gap:16px;margin-bottom:10px;">
+                                <img src="/assets/img/logo.<?= Security::e($settings['logo_ext'] ?? 'png') ?>"
+                                     alt="Current logo"
+                                     style="height:36px;width:auto;background:#f1f5f9;padding:5px 10px;border-radius:8px;border:1px solid #e2e8f0;">
+                                <span style="font-size:12px;color:#94a3b8;">Current logo</span>
+                            </div>
+                            <input type="file" name="logo" accept=".png,.jpg,.jpeg,.gif,.svg,.webp">
+                            <small style="color:#64748b;font-size:12px;">Leave blank to keep existing logo.</small>
                         </div>
-                        <input type="file" name="logo" accept=".png,.jpg,.jpeg,.gif,.svg,.webp">
-                        <small style="color:#64748b;font-size:12px;">Leave blank to keep existing logo.</small>
+                        <div class="form-group" style="flex:1;">
+                            <label>Favicon <span class="hint">(PNG, SVG or ICO — max 512KB)</span></label>
+                            <?php $favExt = $settings['favicon_ext'] ?? 'png'; ?>
+                            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                                <img src="/assets/img/favicon.<?= Security::e($favExt) ?>?v=<?= time() ?>"
+                                     alt="Favicon" style="width:32px;height:32px;object-fit:contain;border:1px solid #e2e8f0;border-radius:4px;padding:2px;"
+                                     onerror="this.style.display='none'">
+                                <span style="font-size:12px;color:#94a3b8;">Current favicon</span>
+                            </div>
+                            <input type="file" name="favicon" accept=".png,.ico,.svg">
+                        </div>
+                    </div>
+                    <div class="form-group" style="max-width:200px;">
+                        <label>Currency Symbol</label>
+                        <input type="text" name="currency_symbol" value="<?= Security::e($settings['currency_symbol'] ?? '£') ?>" maxlength="3" placeholder="£">
+                        <small style="color:#64748b;font-size:12px;">Shown on invoices and dashboard (e.g. £ $ €)</small>
                     </div>
                 </div>
             </div>
