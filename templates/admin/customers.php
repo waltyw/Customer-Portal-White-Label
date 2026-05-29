@@ -1,7 +1,13 @@
 <?php use App\Core\Security; ?>
 <div class="page-header">
     <h1>Customers</h1>
-    <a href="/admin/customers/create" class="btn btn-primary">Add Customer</a>
+    <div style="display:flex;gap:10px;">
+        <a href="/admin/customers/import" class="btn btn-outline">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Import CSV
+        </a>
+        <a href="/admin/customers/create" class="btn btn-primary">Add Customer</a>
+    </div>
 </div>
 
 <div class="card p-0">

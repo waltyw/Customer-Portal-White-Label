@@ -173,6 +173,122 @@ class AdminController
         ], 'admin');
     }
 
+    public function importForm(): void
+    {
+        Auth::requireAdmin();
+        View::render('admin/customer-import', ['title' => 'Import Customers'], 'admin');
+    }
+
+    public function downloadTemplate(): void
+    {
+        Auth::requireAdmin();
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="customer-import-template.csv"');
+        header('Cache-Control: no-cache, no-store, must-revalidate');
+
+        // UTF-8 BOM so Excel opens it correctly
+        echo "\xEF\xBB\xBF";
+
+        $out = fopen('php://output', 'w');
+        fputcsv($out, ['name', 'email', 'company', 'phone', 'website_url']);
+        fputcsv($out, ['Jane Smith', 'jane@example.com', 'Smith Ltd', '07700 000001', 'https://smithltd.co.uk']);
+        fputcsv($out, ['Bob Jones', 'bob@example.com', 'Jones & Co', '07700 000002', '']);
+        fclose($out);
+        exit;
+    }
+
+    public function importCsv(): void
+    {
+        Auth::requireAdmin();
+        Security::checkCsrf();
+
+        if (empty($_FILES['csv']['name']) || $_FILES['csv']['error'] !== UPLOAD_ERR_OK) {
+            Security::flash('error', 'Please choose a CSV file to upload.');
+            Security::redirect('/admin/customers/import');
+        }
+
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mime  = $finfo->file($_FILES['csv']['tmp_name']);
+        if (!in_array($mime, ['text/plain', 'text/csv', 'application/csv', 'application/vnd.ms-excel'])) {
+            Security::flash('error', 'File must be a CSV.');
+            Security::redirect('/admin/customers/import');
+        }
+
+        $sendEmails = isset($_POST['send_emails']);
+        $handle     = fopen($_FILES['csv']['tmp_name'], 'r');
+
+        // Strip UTF-8 BOM if present
+        $bom = fread($handle, 3);
+        if ($bom !== "\xEF\xBB\xBF") rewind($handle);
+
+        $headers  = array_map('strtolower', array_map('trim', fgetcsv($handle)));
+        $required = ['name', 'email'];
+
+        foreach ($required as $col) {
+            if (!in_array($col, $headers)) {
+                fclose($handle);
+                Security::flash('error', "CSV is missing required column: '{$col}'. Please use the template.");
+                Security::redirect('/admin/customers/import');
+            }
+        }
+
+        $imported = 0;
+        $skipped  = 0;
+        $errors   = [];
+        $row      = 1;
+
+        while (($data = fgetcsv($handle)) !== false) {
+            $row++;
+            if (count($data) < 2 || implode('', $data) === '') continue;
+
+            $record = [];
+            foreach ($headers as $i => $header) {
+                $record[$header] = trim($data[$i] ?? '');
+            }
+
+            $name  = $record['name']  ?? '';
+            $email = strtolower($record['email'] ?? '');
+
+            if (!$name) {
+                $errors[] = "Row {$row}: name is empty — skipped.";
+                continue;
+            }
+
+            if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $errors[] = "Row {$row}: '{$email}' is not a valid email — skipped.";
+                continue;
+            }
+
+            if (User::findByEmail($email)) {
+                $errors[] = "Row {$row}: {$email} already exists — skipped.";
+                $skipped++;
+                continue;
+            }
+
+            $tempPassword = bin2hex(random_bytes(8));
+            $userId = User::create([
+                'email'       => $email,
+                'password'    => $tempPassword,
+                'name'        => $name,
+                'company'     => $record['company']     ?? '',
+                'phone'       => $record['phone']       ?? '',
+                'website_url' => $record['website_url'] ?? '',
+            ]);
+
+            if ($sendEmails) {
+                Mailer::sendWelcome(['email' => $email, 'name' => $name], $tempPassword);
+            }
+
+            $imported++;
+        }
+
+        fclose($handle);
+
+        $_SESSION['import_result'] = compact('imported', 'skipped', 'errors');
+        Security::flash('success', "{$imported} customer(s) imported" . ($skipped ? ", {$skipped} skipped (already exist)" : '') . '.');
+        Security::redirect('/admin/customers/import');
+    }
+
     public function updateCustomer(int $id): void
     {
         Auth::requireAdmin();
