@@ -21,8 +21,18 @@ class Setting
         'text_color'     => '#1e293b',
         'text_muted'     => '#64748b',
         'card_bg'        => '#ffffff',
-        'support_email'  => '',
-        'logo_ext'       => 'png',
+        'support_email'        => '',
+        'logo_ext'             => 'png',
+        'xero_client_id'       => '',
+        'xero_client_secret'   => '',
+        'xero_redirect_uri'    => '',
+        'xero_access_token'    => '',
+        'xero_refresh_token'   => '',
+        'xero_token_expires_at'=> '0',
+        'xero_tenant_id'       => '',
+        'xero_tenant_name'     => '',
+        'xero_oauth_state'     => '',
+        'xero_last_sync'       => '',
     ];
 
     public static function all(): array

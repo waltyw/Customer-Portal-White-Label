@@ -16,6 +16,7 @@ use App\Controllers\WebhookController;
 use App\Controllers\AdminController;
 use App\Controllers\AccountController;
 use App\Controllers\HelpController;
+use App\Controllers\XeroController;
 
 // Stripe webhook must read raw body before session/output start
 $isWebhook = ($_SERVER['REQUEST_METHOD'] === 'POST' && parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) === '/webhook/stripe');
@@ -74,6 +75,12 @@ $routes = [
     'GET /admin/tickets'          => [AdminController::class,    'tickets'],
     'GET /admin/service-status'   => [AdminController::class,    'serviceStatus'],
     'POST /admin/service-status/add' => [AdminController::class, 'addService'],
+    'GET /admin/xero'             => [XeroController::class,     'index'],
+    'POST /admin/xero/config'     => [XeroController::class,     'saveConfig'],
+    'GET /admin/xero/connect'     => [XeroController::class,     'connect'],
+    'GET /admin/xero/callback'    => [XeroController::class,     'callback'],
+    'POST /admin/xero/disconnect' => [XeroController::class,     'disconnect'],
+    'POST /admin/xero/sync'       => [XeroController::class,     'sync'],
     'GET /admin/invoices'         => [AdminController::class,    'invoices'],
     'GET /admin/invoices/create'  => [AdminController::class,    'createInvoice'],
     'POST /admin/invoices/create' => [AdminController::class,    'storeInvoice'],
