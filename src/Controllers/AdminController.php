@@ -30,32 +30,59 @@ class AdminController
         ], 'admin');
     }
 
-    public function clearCache(): void
+    public function systemStatus(): void
     {
         Auth::requireAdmin();
-        Security::checkCsrf();
 
-        $cleared = [];
+        $status = [];
 
-        if (function_exists('opcache_reset')) {
-            opcache_reset();
-            $cleared[] = 'PHP OPcache';
+        // Database
+        try {
+            \App\Core\DB::fetchOne('SELECT 1');
+            $status['database'] = ['ok' => true, 'msg' => 'Connected'];
+        } catch (\Exception $e) {
+            $status['database'] = ['ok' => false, 'msg' => $e->getMessage()];
         }
 
-        // Clear any session flash data from other users isn't possible server-side,
-        // but we can clear the log file to free space
-        $logFile = dirname(__DIR__, 3) . '/storage/logs/php_errors.log';
-        if (is_writable($logFile)) {
-            file_put_contents($logFile, '');
-            $cleared[] = 'error log';
-        }
+        // Storage writable
+        $storageBase = dirname(__DIR__, 3) . '/storage';
+        $status['storage_attachments'] = [
+            'ok'  => is_writable($storageBase . '/attachments'),
+            'msg' => is_writable($storageBase . '/attachments') ? 'Writable' : 'Not writable — chmod 755',
+        ];
+        $status['storage_logs'] = [
+            'ok'  => is_writable($storageBase . '/logs'),
+            'msg' => is_writable($storageBase . '/logs') ? 'Writable' : 'Not writable — chmod 755',
+        ];
 
-        $msg = $cleared
-            ? 'Cleared: ' . implode(', ', $cleared) . '.'
-            : 'Nothing to clear (OPcache not enabled on this server).';
+        // PHP version
+        $status['php'] = [
+            'ok'  => version_compare(PHP_VERSION, '8.1.0', '>='),
+            'msg' => PHP_VERSION,
+        ];
 
-        Security::flash('success', $msg);
-        Security::redirect('/admin');
+        // OPcache
+        $status['opcache'] = [
+            'ok'  => false,
+            'msg' => function_exists('opcache_reset') ? 'Enabled' : 'Not enabled (files reload instantly — no action needed)',
+        ];
+
+        // SMTP configured
+        $status['smtp'] = [
+            'ok'  => !empty($_ENV['SMTP_HOST']) && !empty($_ENV['SMTP_PASS']),
+            'msg' => !empty($_ENV['SMTP_HOST']) ? $_ENV['SMTP_HOST'] . ':' . ($_ENV['SMTP_PORT'] ?? '465') : 'Not configured in .env',
+        ];
+
+        // Stripe configured
+        $status['stripe'] = [
+            'ok'  => !empty($_ENV['STRIPE_SECRET_KEY']),
+            'msg' => !empty($_ENV['STRIPE_SECRET_KEY']) ? 'Key set' : 'Not configured — payments disabled',
+        ];
+
+        View::render('admin/system-status', [
+            'title'  => 'System Status',
+            'status' => $status,
+        ], 'admin');
     }
 
     // ── Customers ────────────────────────────────────────────────────────────

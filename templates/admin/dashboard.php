@@ -3,13 +3,10 @@
     <h1>Admin Dashboard</h1>
     <div style="display:flex;align-items:center;gap:12px;">
         <span style="font-size:13px;color:#94a3b8;"><?= date('l, j F Y') ?></span>
-        <form method="POST" action="/admin/clear-cache">
-            <?= Security::csrfField() ?>
-            <button type="submit" class="btn btn-outline btn-sm" title="Clears PHP OPcache so uploaded files take effect immediately">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.9"/></svg>
-                Clear Cache
-            </button>
-        </form>
+        <a href="/admin/system-status" class="btn btn-outline btn-sm">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            System Status
+        </a>
     </div>
 </div>
 
