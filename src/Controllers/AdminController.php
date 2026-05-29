@@ -9,6 +9,7 @@ use App\Core\Security;
 use App\Core\View;
 use App\Email\Mailer;
 use App\Models\Invoice;
+use App\Models\Setting;
 use App\Models\Ticket;
 use App\Models\User;
 
@@ -319,5 +320,54 @@ class AdminController
 
         Security::flash('success', 'Invoice created.');
         Security::redirect('/admin/invoices');
+    }
+
+    // ── Settings ──────────────────────────────────────────────────────────────
+
+    public function settings(): void
+    {
+        Auth::requireAdmin();
+        View::render('admin/settings', [
+            'title'    => 'Portal Settings',
+            'settings' => Setting::all(),
+        ], 'admin');
+    }
+
+    public function saveSettings(): void
+    {
+        Auth::requireAdmin();
+        Security::checkCsrf();
+
+        Setting::saveMany([
+            'app_name'      => trim($_POST['app_name'] ?? ''),
+            'primary_color' => $_POST['primary_color'] ?? '#2563eb',
+            'primary_dark'  => $_POST['primary_dark']  ?? '#1d4ed8',
+            'sidebar_bg'    => $_POST['sidebar_bg']    ?? '#0f172a',
+            'sidebar_text'  => $_POST['sidebar_text']  ?? '#94a3b8',
+            'sidebar_active'=> $_POST['sidebar_active']?? '#2563eb',
+            'support_email' => trim($_POST['support_email'] ?? ''),
+        ]);
+
+        // Handle logo upload
+        if (!empty($_FILES['logo']['name']) && $_FILES['logo']['error'] === UPLOAD_ERR_OK) {
+            $allowed = ['image/png', 'image/jpeg', 'image/gif', 'image/svg+xml', 'image/webp'];
+            $finfo   = new \finfo(FILEINFO_MIME_TYPE);
+            $mime    = $finfo->file($_FILES['logo']['tmp_name']);
+
+            if (in_array($mime, $allowed) && $_FILES['logo']['size'] <= 2097152) {
+                $ext      = pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION);
+                $logoPath = dirname(__DIR__, 3) . '/public/assets/img/logo.' . $ext;
+                move_uploaded_file($_FILES['logo']['tmp_name'], $logoPath);
+
+                // If extension changed, save it so templates can reference it
+                Setting::set('logo_ext', $ext);
+            } else {
+                Security::flash('error', 'Logo must be PNG, JPG, SVG or WebP under 2MB.');
+                Security::redirect('/admin/settings');
+            }
+        }
+
+        Security::flash('success', 'Settings saved.');
+        Security::redirect('/admin/settings');
     }
 }

@@ -60,6 +60,8 @@ $routes = [
     'GET /admin/invoices'          => [AdminController::class,     'invoices'],
     'GET /admin/invoices/create'   => [AdminController::class,     'createInvoice'],
     'POST /admin/invoices/create'  => [AdminController::class,     'storeInvoice'],
+    'GET /admin/settings'          => [AdminController::class,     'settings'],
+    'POST /admin/settings'         => [AdminController::class,     'saveSettings'],
 ];
 
 $key = $method . ' ' . $path;
