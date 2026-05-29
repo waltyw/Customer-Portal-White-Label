@@ -26,7 +26,36 @@ class AdminController
             'ticketCounts'   => $ticketCounts,
             'invoiceCounts'  => $invoiceCounts,
             'recentTickets'  => $recentTickets,
+            'opcacheEnabled' => function_exists('opcache_reset'),
         ], 'admin');
+    }
+
+    public function clearCache(): void
+    {
+        Auth::requireAdmin();
+        Security::checkCsrf();
+
+        $cleared = [];
+
+        if (function_exists('opcache_reset')) {
+            opcache_reset();
+            $cleared[] = 'PHP OPcache';
+        }
+
+        // Clear any session flash data from other users isn't possible server-side,
+        // but we can clear the log file to free space
+        $logFile = dirname(__DIR__, 3) . '/storage/logs/php_errors.log';
+        if (is_writable($logFile)) {
+            file_put_contents($logFile, '');
+            $cleared[] = 'error log';
+        }
+
+        $msg = $cleared
+            ? 'Cleared: ' . implode(', ', $cleared) . '.'
+            : 'Nothing to clear (OPcache not enabled on this server).';
+
+        Security::flash('success', $msg);
+        Security::redirect('/admin');
     }
 
     // ── Customers ────────────────────────────────────────────────────────────

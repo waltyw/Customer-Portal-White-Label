@@ -58,6 +58,7 @@ $routes = [
 
     // Admin
     'GET /admin'                  => [AdminController::class,    'dashboard'],
+    'POST /admin/clear-cache'     => [AdminController::class,    'clearCache'],
     'GET /admin/customers'        => [AdminController::class,    'customers'],
     'GET /admin/customers/create' => [AdminController::class,    'createCustomer'],
     'POST /admin/customers/create'=> [AdminController::class,    'storeCustomer'],
