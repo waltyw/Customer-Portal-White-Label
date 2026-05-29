@@ -58,9 +58,9 @@ class Website
     private static function normalise(string $url): string
     {
         $url = trim($url);
-        if ($url && !preg_match('#^https?://#', $url)) {
-            $url = 'https://' . $url;
-        }
-        return $url;
+        if (!$url) return $url;
+        // Strip any partial protocol the user may have typed (http:, https:, http:/, etc.)
+        $url = preg_replace('#^https?:/*#i', '', $url);
+        return 'https://' . $url;
     }
 }
