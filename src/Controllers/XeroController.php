@@ -31,11 +31,22 @@ class XeroController
         Auth::requireAdmin();
         Security::checkCsrf();
 
-        Setting::set('xero_client_id',     trim($_POST['xero_client_id'] ?? ''));
-        Setting::set('xero_client_secret', trim($_POST['xero_client_secret'] ?? ''));
-        Setting::set('xero_redirect_uri',  rtrim($_ENV['APP_URL'], '/') . '/admin/xero/callback');
+        $clientId = trim($_POST['xero_client_id'] ?? '');
+        $secret   = trim($_POST['xero_client_secret'] ?? '');
 
-        Security::flash('success', 'Xero credentials saved. Now click Connect to Xero.');
+        if ($clientId) {
+            Setting::set('xero_client_id', $clientId);
+        }
+
+        // Only overwrite the secret if a new one was actually typed
+        if ($secret) {
+            Setting::set('xero_client_secret', $secret);
+        }
+
+        Setting::set('xero_redirect_uri', rtrim($_ENV['APP_URL'], '/') . '/admin/xero/callback');
+
+        $secretStatus = $secret ? 'Client ID and Secret saved.' : 'Client ID saved. Existing secret kept.';
+        Security::flash('success', $secretStatus . ' Now click Connect to Xero.');
         Security::redirect('/admin/xero');
     }
 

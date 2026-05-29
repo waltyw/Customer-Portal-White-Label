@@ -11,7 +11,7 @@ class XeroAPI
     private const AUTH_URL  = 'https://login.xero.com/identity/connect/authorize';
     private const TOKEN_URL = 'https://identity.xero.com/connect/token';
     private const API_BASE  = 'https://api.xero.com/api.xro/2.0';
-    private const SCOPE     = 'accounting.transactions.read accounting.contacts.read offline_access';
+    private const SCOPE     = 'openid profile email accounting.transactions accounting.contacts offline_access';
 
     // ── OAuth ────────────────────────────────────────────────────────────────
 
