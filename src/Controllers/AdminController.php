@@ -649,14 +649,19 @@ class AdminController
             'currency_symbol' => trim($_POST['currency_symbol'] ?? '£') ?: '£',
         ]);
 
+        // Project root = portal_private/ = 2 levels up from src/Controllers/
+        $imgDir = dirname(__DIR__, 2) . '/public/assets/img/';
+
         // Handle favicon upload
         if (!empty($_FILES['favicon']['name']) && $_FILES['favicon']['error'] === UPLOAD_ERR_OK) {
             $ext     = strtolower(pathinfo($_FILES['favicon']['name'], PATHINFO_EXTENSION));
             $allowed = ['png', 'jpg', 'ico', 'svg'];
             if (in_array($ext, $allowed) && $_FILES['favicon']['size'] <= 524288) {
-                $dest = dirname(__DIR__, 3) . '/public/assets/img/favicon.' . $ext;
-                if (move_uploaded_file($_FILES['favicon']['tmp_name'], $dest)) {
+                if (move_uploaded_file($_FILES['favicon']['tmp_name'], $imgDir . 'favicon.' . $ext)) {
                     Setting::set('favicon_ext', $ext);
+                } else {
+                    Security::flash('error', 'Favicon upload failed — check folder permissions on public/assets/img/');
+                    Security::redirect('/admin/settings');
                 }
             }
         }
@@ -668,12 +673,13 @@ class AdminController
             $mime    = $finfo->file($_FILES['logo']['tmp_name']);
 
             if (in_array($mime, $allowed) && $_FILES['logo']['size'] <= 2097152) {
-                $ext      = pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION);
-                $logoPath = dirname(__DIR__, 3) . '/public/assets/img/logo.' . $ext;
-                move_uploaded_file($_FILES['logo']['tmp_name'], $logoPath);
-
-                // If extension changed, save it so templates can reference it
-                Setting::set('logo_ext', $ext);
+                $ext = pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION);
+                if (move_uploaded_file($_FILES['logo']['tmp_name'], $imgDir . 'logo.' . $ext)) {
+                    Setting::set('logo_ext', $ext);
+                } else {
+                    Security::flash('error', 'Logo upload failed — check folder permissions on public/assets/img/');
+                    Security::redirect('/admin/settings');
+                }
             } else {
                 Security::flash('error', 'Logo must be PNG, JPG, SVG or WebP under 2MB.');
                 Security::redirect('/admin/settings');
