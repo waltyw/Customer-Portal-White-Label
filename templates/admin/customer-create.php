@@ -29,6 +29,11 @@
                     <input type="text" name="phone" value="<?= Security::e($_POST['phone'] ?? '') ?>" placeholder="07700 000000">
                 </div>
             </div>
+            <div class="form-group">
+                <label>Website URL</label>
+                <input type="text" name="website_url" value="<?= Security::e($_POST['website_url'] ?? '') ?>" placeholder="https://theirdomain.co.uk">
+                <small style="color:#64748b;font-size:12px;">Used to auto-fill email setup guides for this customer.</small>
+            </div>
             <div class="form-actions">
                 <button type="submit" class="btn btn-primary">Create Customer &amp; Send Welcome Email</button>
             </div>

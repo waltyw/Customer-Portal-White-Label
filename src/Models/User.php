@@ -37,13 +37,14 @@ class User
     {
         $hash = password_hash($data['password'], PASSWORD_BCRYPT, ['cost' => 12]);
         return DB::insert(
-            'INSERT INTO users (email, password_hash, name, company, phone, role) VALUES (?, ?, ?, ?, ?, ?)',
+            'INSERT INTO users (email, password_hash, name, company, phone, website_url, role) VALUES (?, ?, ?, ?, ?, ?, ?)',
             [
                 strtolower($data['email']),
                 $hash,
                 $data['name'],
                 $data['company'] ?? null,
                 $data['phone'] ?? null,
+                self::normaliseUrl($data['website_url'] ?? null),
                 $data['role'] ?? 'customer',
             ]
         );
@@ -52,9 +53,34 @@ class User
     public static function update(int $id, array $data): void
     {
         DB::execute(
-            'UPDATE users SET name = ?, company = ?, phone = ?, is_active = ? WHERE id = ?',
-            [$data['name'], $data['company'] ?? null, $data['phone'] ?? null, $data['is_active'] ?? 1, $id]
+            'UPDATE users SET name = ?, company = ?, phone = ?, website_url = ?, is_active = ? WHERE id = ?',
+            [
+                $data['name'],
+                $data['company'] ?? null,
+                $data['phone'] ?? null,
+                self::normaliseUrl($data['website_url'] ?? null),
+                $data['is_active'] ?? 1,
+                $id,
+            ]
         );
+    }
+
+    public static function mailServer(?string $websiteUrl): string
+    {
+        if (!$websiteUrl) return '';
+        $host = parse_url($websiteUrl, PHP_URL_HOST) ?? $websiteUrl;
+        $host = preg_replace('/^www\./', '', $host);
+        return 'mail.' . $host;
+    }
+
+    private static function normaliseUrl(?string $url): ?string
+    {
+        if (!$url) return null;
+        $url = trim($url);
+        if ($url && !str_starts_with($url, 'http')) {
+            $url = 'https://' . $url;
+        }
+        return $url ?: null;
     }
 
     public static function toggleActive(int $id): void

@@ -130,11 +130,12 @@ class AdminController
 
         $tempPassword = bin2hex(random_bytes(8));
         $userId = User::create([
-            'email'    => $email,
-            'password' => $tempPassword,
-            'name'     => $name,
-            'company'  => $company,
-            'phone'    => $phone,
+            'email'       => $email,
+            'password'    => $tempPassword,
+            'name'        => $name,
+            'company'     => $company,
+            'phone'       => $phone,
+            'website_url' => trim($_POST['website_url'] ?? ''),
         ]);
 
         Mailer::sendWelcome(['email' => $email, 'name' => $name], $tempPassword);

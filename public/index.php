@@ -14,6 +14,7 @@ use App\Controllers\InvoiceController;
 use App\Controllers\PaymentController;
 use App\Controllers\WebhookController;
 use App\Controllers\AdminController;
+use App\Controllers\HelpController;
 
 // Stripe webhook must read raw body before session/output start
 $isWebhook = ($_SERVER['REQUEST_METHOD'] === 'POST' && parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) === '/webhook/stripe');
@@ -50,6 +51,7 @@ $routes = [
     'GET /tickets/create'         => [TicketController::class,   'create'],
     'POST /tickets/create'        => [TicketController::class,   'store'],
     'GET /invoices'               => [InvoiceController::class,  'index'],
+    'GET /help'                   => [HelpController::class,     'index'],
     'GET /payment/success'        => [PaymentController::class,  'success'],
     'GET /payment/cancelled'      => [PaymentController::class,  'cancelled'],
 

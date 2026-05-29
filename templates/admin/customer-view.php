@@ -41,6 +41,15 @@
             <table style="width:100%;font-size:14px;">
                 <tr><td style="color:#64748b;padding:6px 0;width:40%;">Company</td><td><?= Security::e($customer['company'] ?? '—') ?></td></tr>
                 <tr><td style="color:#64748b;padding:6px 0;">Phone</td><td><?= Security::e($customer['phone'] ?? '—') ?></td></tr>
+                <tr><td style="color:#64748b;padding:6px 0;">Website</td><td>
+                    <?php if ($customer['website_url']): ?>
+                        <a href="<?= Security::e($customer['website_url']) ?>" target="_blank" rel="noopener"><?= Security::e($customer['website_url']) ?></a>
+                    <?php else: ?>—<?php endif; ?>
+                </td></tr>
+                <tr><td style="color:#64748b;padding:6px 0;">Mail Server</td><td>
+                    <?php $ms = \App\Models\User::mailServer($customer['website_url'] ?? null); ?>
+                    <?= $ms ? Security::e($ms) : '—' ?>
+                </td></tr>
                 <tr><td style="color:#64748b;padding:6px 0;">Status</td><td><span class="badge <?= $customer['is_active'] ? 'badge-active' : 'badge-inactive' ?>"><?= $customer['is_active'] ? 'Active' : 'Inactive' ?></span></td></tr>
                 <tr><td style="color:#64748b;padding:6px 0;">Member Since</td><td><?= date('j F Y', strtotime($customer['created_at'])) ?></td></tr>
             </table>

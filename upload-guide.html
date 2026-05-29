@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Portal Upload Guide — portal.bbizzi.co.uk</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1e293b; padding: 32px; }
+  h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; color: #0f172a; }
+  .subtitle { color: #64748b; font-size: 14px; margin-bottom: 32px; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px; }
+  .panel { background: white; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  .panel-head { padding: 14px 18px; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+  .panel-head.local  { background: #eff6ff; color: #1d4ed8; border-bottom: 1px solid #bfdbfe; }
+  .panel-head.server { background: #f0fdf4; color: #15803d; border-bottom: 1px solid #bbf7d0; }
+  .panel-body { padding: 16px 18px; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.9; }
+  .folder { color: #0f172a; font-weight: 700; }
+  .file   { color: #475569; }
+  .skip   { color: #94a3b8; text-decoration: line-through; }
+  .important { color: #dc2626; font-weight: 700; }
+  .note   { font-family: 'Segoe UI', sans-serif; font-size: 11px; color: #64748b; background: #f8fafc; border-radius: 4px; padding: 2px 6px; margin-left: 6px; vertical-align: middle; }
+  .indent1 { padding-left: 18px; }
+  .indent2 { padding-left: 36px; }
+  .indent3 { padding-left: 54px; }
+  .indent4 { padding-left: 72px; }
+  .arrow { font-size: 28px; display: flex; align-items: center; justify-content: center; color: #94a3b8; }
+
+  .steps { background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+  .steps h2 { font-size: 16px; font-weight: 700; margin-bottom: 18px; color: #0f172a; }
+  .step { display: flex; gap: 14px; margin-bottom: 18px; align-items: flex-start; }
+  .step-num { width: 28px; height: 28px; border-radius: 50%; background: #2563eb; color: white; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .step-body h3 { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .step-body p  { font-size: 13px; color: #475569; line-height: 1.6; }
+  .step-body code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 12px; color: #0f172a; }
+
+  .legend { display: flex; gap: 20px; flex-wrap: wrap; background: white; border-radius: 10px; border: 1px solid #e2e8f0; padding: 14px 18px; margin-bottom: 24px; font-size: 13px; }
+  .legend-item { display: flex; align-items: center; gap: 7px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  .warning { background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 14px 18px; margin-bottom: 24px; font-size: 13px; color: #991b1b; }
+  .warning strong { display: block; margin-bottom: 4px; font-size: 14px; }
+
+  @media print {
+    body { background: white; padding: 16px; }
+    .cols { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Upload Guide — portal.bbizzi.co.uk</h1>
+<p class="subtitle">Where every file goes on your WHM server</p>
+
+<div class="warning">
+  <strong>⚠ Do this in WHM FIRST before uploading</strong>
+  Go to WHM → Domains → portal.bbizzi.co.uk → Edit → change Document Root to:<br>
+  <code style="background:#fee2e2;padding:3px 8px;border-radius:4px;font-size:13px;margin-top:6px;display:inline-block;">
+    /home/yourusername/portal.bbizzi.co.uk/public
+  </code>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="dot" style="background:#1d4ed8;"></div> Folder</div>
+  <div class="legend-item"><div class="dot" style="background:#475569;"></div> File — upload this</div>
+  <div class="legend-item"><div class="dot" style="background:#94a3b8;"></div> Skip — do NOT upload</div>
+  <div class="legend-item"><div class="dot" style="background:#dc2626;"></div> Create manually on server</div>
+  <div class="legend-item"><div class="dot" style="background:#15803d;"></div> Web root (what the browser sees)</div>
+</div>
+
+<div class="cols">
+
+  <!-- LOCAL -->
+  <div class="panel">
+    <div class="panel-head local">
+      💻 &nbsp;Your PC &nbsp;—&nbsp; d:\Projects\customer-portal\
+    </div>
+    <div class="panel-body">
+      <div class="folder">customer-portal\</div>
+
+      <div class="indent1 folder">config\</div>
+      <div class="indent2 file">config.php</div>
+
+      <div class="indent1 folder">src\</div>
+      <div class="indent2 folder">Auth\</div>
+      <div class="indent3 file">Auth.php</div>
+      <div class="indent2 folder">Controllers\</div>
+      <div class="indent3 file">AdminController.php</div>
+      <div class="indent3 file">AuthController.php</div>
+      <div class="indent3 file">DashboardController.php</div>
+      <div class="indent3 file">InvoiceController.php</div>
+      <div class="indent3 file">PaymentController.php</div>
+      <div class="indent3 file">TicketController.php</div>
+      <div class="indent3 file">WebhookController.php</div>
+      <div class="indent2 folder">Core\</div>
+      <div class="indent3 file">DB.php</div>
+      <div class="indent3 file">EnvLoader.php</div>
+      <div class="indent3 file">Security.php</div>
+      <div class="indent3 file">Stripe.php</div>
+      <div class="indent3 file">View.php</div>
+      <div class="indent2 folder">Email\</div>
+      <div class="indent3 file">Mailer.php</div>
+      <div class="indent2 folder">Models\</div>
+      <div class="indent3 file">Invoice.php</div>
+      <div class="indent3 file">Payment.php</div>
+      <div class="indent3 file">Ticket.php</div>
+      <div class="indent3 file">User.php</div>
+
+      <div class="indent1 folder">templates\</div>
+      <div class="indent2 folder">admin\</div>
+      <div class="indent3 file">customer-create.php</div>
+      <div class="indent3 file">customer-view.php</div>
+      <div class="indent3 file">customers.php</div>
+      <div class="indent3 file">dashboard.php</div>
+      <div class="indent3 file">invoice-create.php</div>
+      <div class="indent3 file">invoices.php</div>
+      <div class="indent3 file">ticket-view.php</div>
+      <div class="indent3 file">tickets.php</div>
+      <div class="indent2 folder">auth\</div>
+      <div class="indent3 file">forgot-password.php</div>
+      <div class="indent3 file">login.php</div>
+      <div class="indent3 file">reset-password.php</div>
+      <div class="indent2 folder">customer\</div>
+      <div class="indent3 file">dashboard.php</div>
+      <div class="indent3 file">invoice-view.php</div>
+      <div class="indent3 file">invoices.php</div>
+      <div class="indent3 file">payment.php</div>
+      <div class="indent3 file">payment-success.php</div>
+      <div class="indent3 file">ticket-create.php</div>
+      <div class="indent3 file">ticket-view.php</div>
+      <div class="indent3 file">tickets.php</div>
+      <div class="indent2 folder">errors\</div>
+      <div class="indent3 file">404.php</div>
+      <div class="indent2 folder">layouts\</div>
+      <div class="indent3 file">admin.php</div>
+      <div class="indent3 file">main.php</div>
+
+      <div class="indent1 folder">vendor-standalone\</div>
+      <div class="indent2 folder">PHPMailer\</div>
+      <div class="indent3 file">Exception.php</div>
+      <div class="indent3 file">PHPMailer.php</div>
+      <div class="indent3 file">SMTP.php</div>
+
+      <div class="indent1 folder">storage\</div>
+      <div class="indent2 folder">attachments\</div>
+      <div class="indent2 folder">logs\</div>
+
+      <div class="indent1 folder" style="color:#15803d;">public\ <span class="note" style="color:#15803d;">← web root</span></div>
+      <div class="indent2 file">index.php</div>
+      <div class="indent2 file">.htaccess</div>
+      <div class="indent2 folder">assets\</div>
+      <div class="indent3 folder">css\</div>
+      <div class="indent4 file">app.css</div>
+      <div class="indent3 folder">js\</div>
+      <div class="indent4 file">app.js</div>
+
+      <div class="indent1 file">schema.sql</div>
+      <div class="indent1 file">composer.json</div>
+      <div class="indent1 file">.env.example</div>
+      <div class="indent1 skip">.env &nbsp;<span class="note">NEVER upload</span></div>
+      <div class="indent1 skip">.git\ &nbsp;<span class="note">skip</span></div>
+      <div class="indent1 skip">portal.zip &nbsp;<span class="note">skip</span></div>
+      <div class="indent1 skip">* - Copy.env &nbsp;<span class="note">skip</span></div>
+    </div>
+  </div>
+
+  <!-- SERVER -->
+  <div class="panel">
+    <div class="panel-head server">
+      🖥 &nbsp;Server &nbsp;—&nbsp; /home/yourusername/portal.bbizzi.co.uk/
+    </div>
+    <div class="panel-body">
+      <div class="folder">portal.bbizzi.co.uk/ &nbsp;<span class="note">cPanel default folder</span></div>
+
+      <div class="indent1 folder">config\</div>
+      <div class="indent2 file">config.php</div>
+
+      <div class="indent1 folder">src\</div>
+      <div class="indent2 folder">Auth\ Controllers\ Core\ Email\ Models\</div>
+      <div class="indent2 file">... (all .php files)</div>
+
+      <div class="indent1 folder">templates\</div>
+      <div class="indent2 folder">admin\ auth\ customer\ errors\ layouts\</div>
+      <div class="indent2 file">... (all .php files)</div>
+
+      <div class="indent1 folder">vendor-standalone\</div>
+      <div class="indent2 folder">PHPMailer\</div>
+      <div class="indent3 file">Exception.php</div>
+      <div class="indent3 file">PHPMailer.php</div>
+      <div class="indent3 file">SMTP.php</div>
+
+      <div class="indent1 folder">storage\</div>
+      <div class="indent2 folder">attachments\ &nbsp;<span class="note">chmod 755</span></div>
+      <div class="indent2 folder">logs\ &nbsp;<span class="note">chmod 755</span></div>
+
+      <div class="indent1 important">.env &nbsp;<span class="note" style="color:#dc2626;">Create this manually — never from GitHub</span></div>
+
+      <div class="indent1 file">schema.sql</div>
+      <div class="indent1 file">composer.json</div>
+
+      <div class="indent1" style="margin-top:12px;margin-bottom:4px;">
+        <span class="folder" style="color:#15803d;">public\ </span>
+        <span class="note" style="color:#15803d;">← Document root points HERE</span>
+      </div>
+      <div class="indent2 file">index.php</div>
+      <div class="indent2 file">.htaccess</div>
+      <div class="indent2 folder">assets\</div>
+      <div class="indent3 folder">css\</div>
+      <div class="indent4 file">app.css</div>
+      <div class="indent3 folder">js\</div>
+      <div class="indent4 file">app.js</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- STEPS -->
+<div class="steps">
+  <h2>Setup steps after uploading</h2>
+
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <h3>WHM — Change document root</h3>
+      <p>WHM → Domains → portal.bbizzi.co.uk → Edit → Document Root →
+      <code>/home/yourusername/portal.bbizzi.co.uk/public</code></p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <h3>Create .env file on server</h3>
+      <p>In cPanel File Manager, go to <code>portal.bbizzi.co.uk/</code>, click <strong>+ File</strong>, name it <code>.env</code>.
+      Paste in your real values for DB, SMTP, Stripe, and APP_KEY. Copy from <code>.env.example</code> as a template.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <h3>Import database schema</h3>
+      <p>cPanel → phpMyAdmin → select your database → Import tab → choose <code>schema.sql</code> → Go.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <h3>Set folder permissions</h3>
+      <p>In File Manager, right-click <code>storage/attachments</code> and <code>storage/logs</code> → Change Permissions → set to <code>755</code>.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-body">
+      <h3>Test login</h3>
+      <p>Visit <code>https://portal.bbizzi.co.uk/login</code><br>
+      Email: <code>admin@beebizzi.co.uk</code> &nbsp; Password: <code>ChangeMe123!</code> — change immediately after login.</p>
+    </div>
+  </div>
+
+</div>
+
+<p style="font-size:12px;color:#94a3b8;text-align:center;">Generated for portal.bbizzi.co.uk — Beebizzi Customer Portal</p>
+
+</body>
+</html>
