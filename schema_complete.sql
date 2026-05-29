@@ -162,14 +162,28 @@ CREATE TABLE IF NOT EXISTS `service_status` (
   FOREIGN KEY (`updated_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- ── Handle columns added to existing tables ───────────────────
--- These are safe to run even if the column already exists (MariaDB/MySQL 8+)
+-- ── Add columns to existing tables (MySQL compatible) ────────
+-- Uses INFORMATION_SCHEMA to check before adding — safe to re-run.
 
-ALTER TABLE `users`
-  ADD COLUMN IF NOT EXISTS `website_url` VARCHAR(500) DEFAULT NULL AFTER `phone`;
+-- Add website_url to users if missing
+SET @q = (SELECT IF(COUNT(*) = 0,
+  'ALTER TABLE `users` ADD COLUMN `website_url` VARCHAR(500) DEFAULT NULL AFTER `phone`',
+  'SELECT 1')
+  FROM INFORMATION_SCHEMA.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME   = 'users'
+    AND COLUMN_NAME  = 'website_url');
+PREPARE s FROM @q; EXECUTE s; DEALLOCATE PREPARE s;
 
-ALTER TABLE `tickets`
-  ADD COLUMN IF NOT EXISTS `website_url` VARCHAR(500) DEFAULT NULL AFTER `category`;
+-- Add website_url to tickets if missing
+SET @q = (SELECT IF(COUNT(*) = 0,
+  'ALTER TABLE `tickets` ADD COLUMN `website_url` VARCHAR(500) DEFAULT NULL AFTER `category`',
+  'SELECT 1')
+  FROM INFORMATION_SCHEMA.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE()
+    AND TABLE_NAME   = 'tickets'
+    AND COLUMN_NAME  = 'website_url');
+PREPARE s FROM @q; EXECUTE s; DEALLOCATE PREPARE s;
 
 -- ── Default data ──────────────────────────────────────────────
 
