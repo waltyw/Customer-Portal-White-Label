@@ -1,8 +1,31 @@
-<?php use App\Core\Security; ?>
+<?php
+use App\Core\Security;
+use App\Models\ServiceStatus;
+?>
 <div class="page-header">
     <h1>Welcome back, <?= Security::e(explode(' ', $_SESSION['user_name'] ?? 'there')[0]) ?></h1>
     <p>Here's an overview of your account</p>
 </div>
+
+<?php if ($hasIssues && !empty($services)): ?>
+<?php
+$affected = array_filter($services, fn($s) => $s['status'] !== 'operational');
+$icons    = ['degraded'=>'⚠️','outage'=>'🔴','maintenance'=>'🔧'];
+$colours  = ['degraded'=>'warning','outage'=>'error','maintenance'=>'info'];
+$worst    = $overallStatus;
+?>
+<div class="alert alert-<?= $colours[$worst] ?? 'warning' ?>" style="margin-bottom:20px;">
+    <div>
+        <strong><?= $icons[$worst] ?? '⚠️' ?> Service Update</strong>
+        <div style="margin-top:4px;font-size:13px;">
+            <?php foreach ($affected as $svc): ?>
+            <span><strong><?= Security::e($svc['service_name']) ?>:</strong> <?= ServiceStatus::statusLabel($svc['status']) ?><?= $svc['message'] ? ' — ' . Security::e($svc['message']) : '' ?></span><br>
+            <?php endforeach; ?>
+        </div>
+    </div>
+    <a href="/help" style="font-size:13px;font-weight:600;white-space:nowrap;">View Status →</a>
+</div>
+<?php endif; ?>
 
 <div class="stats-grid">
     <div class="stat-card">

@@ -1,7 +1,46 @@
-<?php use App\Core\Security; ?>
+<?php
+use App\Core\Security;
+use App\Models\ServiceStatus;
+?>
 <div class="page-header">
     <h1>Help &amp; Email Setup Guides</h1>
 </div>
+
+<!-- Service Status Board -->
+<?php if (!empty($services)): ?>
+<?php
+$overallBg     = ServiceStatus::statusBg($overallStatus);
+$overallColour = ServiceStatus::statusColour($overallStatus);
+$overallLabel  = ServiceStatus::statusLabel($overallStatus);
+$icons = ['operational'=>'✅','degraded'=>'⚠️','outage'=>'🔴','maintenance'=>'🔧'];
+?>
+<div class="card" style="margin-bottom:24px;border-color:<?= $overallColour ?>40;">
+    <div style="padding:16px 20px;display:flex;align-items:center;justify-content:space-between;background:<?= $overallBg ?>;border-bottom:1px solid <?= $overallColour ?>30;border-radius:10px 10px 0 0;">
+        <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:20px;"><?= $icons[$overallStatus] ?? '?' ?></span>
+            <div>
+                <div style="font-weight:700;color:<?= $overallColour ?>;font-size:15px;"><?= $overallLabel ?></div>
+                <div style="font-size:12px;color:#64748b;">Updated <?= date('j F Y, H:i') ?></div>
+            </div>
+        </div>
+    </div>
+    <div style="padding:0;">
+        <?php foreach ($services as $svc): ?>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid #f1f5f9;">
+            <span style="font-size:14px;font-weight:500;"><?= Security::e($svc['service_name']) ?></span>
+            <div style="text-align:right;">
+                <span style="background:<?= ServiceStatus::statusBg($svc['status']) ?>;color:<?= ServiceStatus::statusColour($svc['status']) ?>;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600;">
+                    <?= ServiceStatus::statusLabel($svc['status']) ?>
+                </span>
+                <?php if ($svc['message']): ?>
+                <div style="font-size:12px;color:#64748b;margin-top:4px;"><?= Security::e($svc['message']) ?></div>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php endforeach; ?>
+    </div>
+</div>
+<?php endif; ?>
 
 <?php if (!$hasMailServer): ?>
 <div class="alert alert-info">

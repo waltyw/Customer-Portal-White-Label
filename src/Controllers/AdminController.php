@@ -9,6 +9,7 @@ use App\Core\Security;
 use App\Core\View;
 use App\Email\Mailer;
 use App\Models\Invoice;
+use App\Models\ServiceStatus;
 use App\Models\Setting;
 use App\Models\Ticket;
 use App\Models\User;
@@ -344,6 +345,62 @@ class AdminController
 
         Security::flash('success', 'Invoice created.');
         Security::redirect('/admin/invoices');
+    }
+
+    // ── Service Status ────────────────────────────────────────────────────────
+
+    public function serviceStatus(): void
+    {
+        Auth::requireAdmin();
+        View::render('admin/service-status', [
+            'title'    => 'Service Status',
+            'services' => ServiceStatus::all(),
+        ], 'admin');
+    }
+
+    public function updateServiceStatus(int $id): void
+    {
+        Auth::requireAdmin();
+        Security::checkCsrf();
+
+        $status  = $_POST['status'] ?? 'operational';
+        $message = trim($_POST['message'] ?? '');
+
+        if (!in_array($status, ['operational', 'degraded', 'outage', 'maintenance'])) {
+            $status = 'operational';
+        }
+
+        ServiceStatus::update($id, $status, $message, Auth::id());
+        Security::flash('success', 'Service status updated.');
+        Security::redirect('/admin/service-status');
+    }
+
+    public function addService(): void
+    {
+        Auth::requireAdmin();
+        Security::checkCsrf();
+
+        $name    = trim($_POST['service_name'] ?? '');
+        $status  = $_POST['status'] ?? 'operational';
+        $message = trim($_POST['message'] ?? '');
+
+        if (!$name) {
+            Security::flash('error', 'Service name is required.');
+            Security::redirect('/admin/service-status');
+        }
+
+        ServiceStatus::create($name, $status, $message, Auth::id());
+        Security::flash('success', "Service '{$name}' added.");
+        Security::redirect('/admin/service-status');
+    }
+
+    public function deleteService(int $id): void
+    {
+        Auth::requireAdmin();
+        Security::checkCsrf();
+        ServiceStatus::delete($id);
+        Security::flash('success', 'Service removed.');
+        Security::redirect('/admin/service-status');
     }
 
     // ── Settings ──────────────────────────────────────────────────────────────
