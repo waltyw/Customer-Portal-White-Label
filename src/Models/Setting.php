@@ -17,6 +17,10 @@ class Setting
         'sidebar_bg'     => '#0f172a',
         'sidebar_text'   => '#94a3b8',
         'sidebar_active' => '#2563eb',
+        'body_bg'        => '#f8fafc',
+        'text_color'     => '#1e293b',
+        'text_muted'     => '#64748b',
+        'card_bg'        => '#ffffff',
         'support_email'  => '',
         'logo_ext'       => 'png',
     ];
@@ -66,12 +70,16 @@ class Setting
     {
         $s = self::all();
         return sprintf(
-            '<style>:root{--primary:%s;--primary-dark:%s;--sidebar-bg:%s;--sidebar-text:%s;--sidebar-active:%s;}</style>',
+            '<style>:root{--primary:%s;--primary-dark:%s;--sidebar-bg:%s;--sidebar-text:%s;--sidebar-active:%s;--surface:%s;--text:%s;--text-muted:%s;--card-bg:%s;}</style>',
             htmlspecialchars($s['primary_color']),
             htmlspecialchars($s['primary_dark']),
             htmlspecialchars($s['sidebar_bg']),
             htmlspecialchars($s['sidebar_text']),
-            htmlspecialchars($s['sidebar_active'])
+            htmlspecialchars($s['sidebar_active']),
+            htmlspecialchars($s['body_bg']),
+            htmlspecialchars($s['text_color']),
+            htmlspecialchars($s['text_muted']),
+            htmlspecialchars($s['card_bg'])
         );
     }
 }

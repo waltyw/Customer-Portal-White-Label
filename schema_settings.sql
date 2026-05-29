@@ -15,4 +15,9 @@ INSERT IGNORE INTO `settings` (`key`, `value`) VALUES
 ('sidebar_bg',      '#0f172a'),
 ('sidebar_text',    '#94a3b8'),
 ('sidebar_active',  '#2563eb'),
-('support_email',   'support@beebizzi.co.uk');
+('body_bg',         '#f8fafc'),
+('text_color',      '#1e293b'),
+('text_muted',      '#64748b'),
+('card_bg',         '#ffffff'),
+('support_email',   'support@beebizzi.co.uk'),
+('logo_ext',        'png');

@@ -345,6 +345,10 @@ class AdminController
             'sidebar_bg'    => $_POST['sidebar_bg']    ?? '#0f172a',
             'sidebar_text'  => $_POST['sidebar_text']  ?? '#94a3b8',
             'sidebar_active'=> $_POST['sidebar_active']?? '#2563eb',
+            'body_bg'       => $_POST['body_bg']       ?? '#f8fafc',
+            'text_color'    => $_POST['text_color']    ?? '#1e293b',
+            'text_muted'    => $_POST['text_muted']    ?? '#64748b',
+            'card_bg'       => $_POST['card_bg']       ?? '#ffffff',
             'support_email' => trim($_POST['support_email'] ?? ''),
         ]);
 
