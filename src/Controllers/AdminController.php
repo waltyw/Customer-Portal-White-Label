@@ -45,7 +45,7 @@ class AdminController
         }
 
         // Storage writable
-        $storageBase = dirname(__DIR__, 3) . '/storage';
+        $storageBase = dirname(__DIR__, 2) . '/storage';
         $status['storage_attachments'] = [
             'ok'  => is_writable($storageBase . '/attachments'),
             'msg' => is_writable($storageBase . '/attachments') ? 'Writable' : 'Not writable — chmod 755',
