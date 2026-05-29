@@ -157,7 +157,11 @@ class AdminController
         $stats    = User::stats($id);
         $tickets  = Ticket::forUser($id);
         $invoices = Invoice::forUser($id);
-        $websites = Website::forUser($id);
+        try {
+            $websites = Website::forUser($id);
+        } catch (\Throwable) {
+            $websites = [];
+        }
 
         View::render('admin/customer-view', [
             'title'    => $customer['name'],
