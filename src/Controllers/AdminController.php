@@ -13,6 +13,7 @@ use App\Models\ServiceStatus;
 use App\Models\Setting;
 use App\Models\Ticket;
 use App\Models\User;
+use App\Models\Website;
 
 class AdminController
 {
@@ -156,6 +157,7 @@ class AdminController
         $stats    = User::stats($id);
         $tickets  = Ticket::forUser($id);
         $invoices = Invoice::forUser($id);
+        $websites = Website::forUser($id);
 
         View::render('admin/customer-view', [
             'title'    => $customer['name'],
@@ -163,6 +165,7 @@ class AdminController
             'stats'    => $stats,
             'tickets'  => $tickets,
             'invoices' => $invoices,
+            'websites' => $websites,
         ], 'admin');
     }
 
@@ -187,6 +190,30 @@ class AdminController
 
         Security::flash('success', 'Customer details updated.');
         Security::redirect('/admin/customers/' . $id);
+    }
+
+    public function addWebsite(int $id): void
+    {
+        Auth::requireAdmin();
+        Security::checkCsrf();
+
+        $url   = trim($_POST['url'] ?? '');
+        $label = trim($_POST['label'] ?? '');
+
+        if ($url) {
+            Website::add($id, $url, $label);
+            Security::flash('success', 'Website added.');
+        }
+        Security::redirect('/admin/customers/' . $id);
+    }
+
+    public function removeWebsite(int $customerId, int $websiteId): void
+    {
+        Auth::requireAdmin();
+        Security::checkCsrf();
+        Website::remove($websiteId, $customerId);
+        Security::flash('success', 'Website removed.');
+        Security::redirect('/admin/customers/' . $customerId);
     }
 
     public function toggleCustomer(int $id): void

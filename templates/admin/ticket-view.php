@@ -3,11 +3,16 @@
     <div>
         <a href="/admin/tickets" style="font-size:14px;color:#64748b;">&larr; All Tickets</a>
         <h1 style="margin-top:4px;"><?= Security::e($ticket['subject']) ?></h1>
-        <div style="display:flex;gap:8px;margin-top:6px;align-items:center;">
+        <div style="display:flex;gap:8px;margin-top:6px;align-items:center;flex-wrap:wrap;">
             <code><?= Security::e($ticket['reference']) ?></code>
             <span class="badge badge-<?= $ticket['status'] ?>"><?= ucfirst(str_replace('_',' ',$ticket['status'])) ?></span>
             <span class="badge badge-priority-<?= $ticket['priority'] ?>"><?= ucfirst($ticket['priority']) ?></span>
             <a href="/admin/customers/<?= $ticket['user_id'] ?>" style="color:#2563eb;font-size:13px;"><?= Security::e($ticket['customer_name']) ?></a>
+            <?php if (!empty($ticket['website_url'])): ?>
+            <span style="background:#f1f5f9;color:#475569;padding:2px 8px;border-radius:4px;font-size:12px;">
+                🌐 <?= Security::e($ticket['website_url']) ?>
+            </span>
+            <?php endif; ?>
         </div>
     </div>
 

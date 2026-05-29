@@ -52,6 +52,45 @@
         </div>
     </div>
 
+    <!-- Websites -->
+    <div class="card">
+        <div class="card-header"><h2>Your Websites</h2></div>
+        <div class="card-body">
+            <?php if (!empty($websites)): ?>
+            <div style="margin-bottom:16px;">
+                <?php foreach ($websites as $site): ?>
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:8px;">
+                    <div>
+                        <div style="font-weight:500;font-size:14px;"><?= Security::e($site['url']) ?></div>
+                        <?php if ($site['label']): ?>
+                        <div style="font-size:12px;color:#64748b;"><?= Security::e($site['label']) ?></div>
+                        <?php endif; ?>
+                    </div>
+                    <form method="POST" action="/account/remove-website/<?= $site['id'] ?>" onsubmit="return confirm('Remove this website?')">
+                        <?= Security::csrfField() ?>
+                        <button type="submit" class="btn btn-sm btn-danger-outline">Remove</button>
+                    </form>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
+
+            <form method="POST" action="/account/add-website" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+                <?= Security::csrfField() ?>
+                <div class="form-group" style="flex:2;min-width:200px;margin-bottom:0;">
+                    <label>Website URL</label>
+                    <input type="text" name="url" placeholder="https://yourdomain.co.uk" required>
+                </div>
+                <div class="form-group" style="flex:1;min-width:140px;margin-bottom:0;">
+                    <label>Label <span class="hint">(optional)</span></label>
+                    <input type="text" name="label" placeholder="e.g. Main Site">
+                </div>
+                <button type="submit" class="btn btn-primary" style="flex-shrink:0;">Add Website</button>
+            </form>
+            <small style="color:#64748b;font-size:12px;display:block;margin-top:8px;">Added websites appear in the dropdown when raising a support ticket.</small>
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-header"><h2>Change Password</h2></div>
         <div class="card-body">

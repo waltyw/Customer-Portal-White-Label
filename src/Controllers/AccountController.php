@@ -8,6 +8,7 @@ use App\Auth\Auth;
 use App\Core\Security;
 use App\Core\View;
 use App\Models\User;
+use App\Models\Website;
 
 class AccountController
 {
@@ -15,9 +16,34 @@ class AccountController
     {
         Auth::requireAuth();
         View::render('customer/account', [
-            'title' => 'My Account',
-            'user'  => User::find(Auth::id()),
+            'title'    => 'My Account',
+            'user'     => User::find(Auth::id()),
+            'websites' => Website::forUser(Auth::id()),
         ]);
+    }
+
+    public function addWebsite(): void
+    {
+        Auth::requireAuth();
+        Security::checkCsrf();
+
+        $url   = trim($_POST['url'] ?? '');
+        $label = trim($_POST['label'] ?? '');
+
+        if ($url) {
+            Website::add(Auth::id(), $url, $label);
+            Security::flash('success', 'Website added.');
+        }
+        Security::redirect('/account');
+    }
+
+    public function removeWebsite(int $websiteId): void
+    {
+        Auth::requireAuth();
+        Security::checkCsrf();
+        Website::remove($websiteId, Auth::id());
+        Security::flash('success', 'Website removed.');
+        Security::redirect('/account');
     }
 
     public function update(): void

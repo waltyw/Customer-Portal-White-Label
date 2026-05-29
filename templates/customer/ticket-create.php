@@ -16,6 +16,19 @@
                     value="<?= Security::e($_POST['subject'] ?? '') ?>">
             </div>
 
+            <?php if (count($websites) > 1): // only show if they have at least one website ?>
+            <div class="form-group">
+                <label for="website_url">Which website is this about?</label>
+                <select id="website_url" name="website_url">
+                    <?php foreach ($websites as $url => $label): ?>
+                    <option value="<?= Security::e($url) ?>" <?= ($_POST['website_url'] ?? '') === $url ? 'selected' : '' ?>>
+                        <?= Security::e($label) ?>
+                    </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <?php endif; ?>
+
             <div class="form-row">
                 <div class="form-group">
                     <label for="category">Category</label>

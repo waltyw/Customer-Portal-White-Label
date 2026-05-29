@@ -58,8 +58,8 @@ class Ticket
     {
         $reference = self::generateReference();
         return DB::insert(
-            'INSERT INTO tickets (reference, user_id, subject, priority, category) VALUES (?, ?, ?, ?, ?)',
-            [$reference, $userId, $data['subject'], $data['priority'], $data['category']]
+            'INSERT INTO tickets (reference, user_id, subject, priority, category, website_url) VALUES (?, ?, ?, ?, ?, ?)',
+            [$reference, $userId, $data['subject'], $data['priority'], $data['category'], $data['website_url'] ?? null]
         );
     }
 

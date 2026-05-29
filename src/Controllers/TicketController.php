@@ -10,6 +10,7 @@ use App\Core\View;
 use App\Email\Mailer;
 use App\Models\Ticket;
 use App\Models\User;
+use App\Models\Website;
 
 class TicketController
 {
@@ -35,7 +36,10 @@ class TicketController
     public function create(): void
     {
         Auth::requireAuth();
-        View::render('customer/ticket-create', ['title' => 'New Support Ticket']);
+        View::render('customer/ticket-create', [
+            'title'    => 'New Support Ticket',
+            'websites' => Website::forDropdown(Auth::id()),
+        ]);
     }
 
     public function store(): void
@@ -43,10 +47,11 @@ class TicketController
         Auth::requireAuth();
         Security::checkCsrf();
 
-        $subject  = trim($_POST['subject'] ?? '');
-        $message  = trim($_POST['message'] ?? '');
-        $priority = $_POST['priority'] ?? 'medium';
-        $category = $_POST['category'] ?? 'general';
+        $subject    = trim($_POST['subject'] ?? '');
+        $message    = trim($_POST['message'] ?? '');
+        $priority   = $_POST['priority'] ?? 'medium';
+        $category   = $_POST['category'] ?? 'general';
+        $websiteUrl = trim($_POST['website_url'] ?? '');
 
         if (!$subject || !$message) {
             Security::flash('error', 'Subject and message are required.');
@@ -57,7 +62,12 @@ class TicketController
         if (!in_array($category, ['billing', 'technical', 'general', 'account'])) $category = 'general';
 
         $userId   = Auth::id();
-        $ticketId = Ticket::create($userId, compact('subject', 'priority', 'category'));
+        $ticketId = Ticket::create($userId, [
+            'subject'     => $subject,
+            'priority'    => $priority,
+            'category'    => $category,
+            'website_url' => $websiteUrl ?: null,
+        ]);
         $msgId    = Ticket::addMessage($ticketId, $userId, $message);
 
         if (!empty($_FILES['attachment']['name'])) {

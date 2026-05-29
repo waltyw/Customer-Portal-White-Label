@@ -116,6 +116,47 @@
     </div>
 </div>
 
+<!-- Websites -->
+<div class="card" style="margin-top:16px;">
+    <div class="card-header"><h2>Websites</h2></div>
+    <div class="card-body">
+        <?php if (!empty($websites)): ?>
+        <div style="margin-bottom:16px;">
+            <?php foreach ($websites as $site): ?>
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;margin-bottom:8px;">
+                <div>
+                    <a href="<?= Security::e($site['url']) ?>" target="_blank" rel="noopener" style="font-weight:500;font-size:14px;"><?= Security::e($site['url']) ?></a>
+                    <?php if ($site['label']): ?>
+                    <span style="font-size:12px;color:#64748b;margin-left:8px;"><?= Security::e($site['label']) ?></span>
+                    <?php endif; ?>
+                    <div style="font-size:12px;color:#94a3b8;margin-top:2px;">Mail: <?= Security::e(\App\Models\User::mailServer($site['url'])) ?></div>
+                </div>
+                <form method="POST" action="/admin/customers/<?= $customer['id'] ?>/remove-website/<?= $site['id'] ?>" onsubmit="return confirm('Remove this website?')">
+                    <?= Security::csrfField() ?>
+                    <button type="submit" class="btn btn-sm btn-danger-outline">Remove</button>
+                </form>
+            </div>
+            <?php endforeach; ?>
+        </div>
+        <?php else: ?>
+        <p style="color:#94a3b8;font-size:13px;margin-bottom:16px;">No websites added yet.</p>
+        <?php endif; ?>
+
+        <form method="POST" action="/admin/customers/<?= $customer['id'] ?>/add-website" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+            <?= Security::csrfField() ?>
+            <div class="form-group" style="flex:2;min-width:200px;margin-bottom:0;">
+                <label>Website URL</label>
+                <input type="text" name="url" placeholder="https://theirdomain.co.uk" required>
+            </div>
+            <div class="form-group" style="flex:1;min-width:140px;margin-bottom:0;">
+                <label>Label <span class="hint">(optional)</span></label>
+                <input type="text" name="label" placeholder="e.g. Main Site">
+            </div>
+            <button type="submit" class="btn btn-primary" style="flex-shrink:0;">Add</button>
+        </form>
+    </div>
+</div>
+
 <script>
 function toggleEdit() {
     const view = document.getElementById('view-details');

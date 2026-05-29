@@ -54,6 +54,7 @@ $routes = [
     'GET /invoices'               => [InvoiceController::class,  'index'],
     'GET /account'                => [AccountController::class,  'index'],
     'POST /account'               => [AccountController::class,  'update'],
+    'POST /account/add-website'   => [AccountController::class,  'addWebsite'],
     'GET /help'                   => [HelpController::class,     'index'],
     'GET /payment/success'        => [PaymentController::class,  'success'],
     'GET /payment/cancelled'      => [PaymentController::class,  'cancelled'],
@@ -92,9 +93,12 @@ $dynamicRoutes = [
     '#^GET /invoices/(\d+)$#'                   => [InvoiceController::class,  'show'],
     '#^GET /invoices/(\d+)/pay$#'               => [PaymentController::class,  'showPay'],
     '#^POST /invoices/(\d+)/pay$#'              => [PaymentController::class,  'processStripe'],
-    '#^GET /admin/customers/(\d+)$#'            => [AdminController::class,    'viewCustomer'],
-    '#^POST /admin/customers/(\d+)/update$#'    => [AdminController::class,    'updateCustomer'],
-    '#^POST /admin/customers/(\d+)/toggle$#'    => [AdminController::class,    'toggleCustomer'],
+    '#^GET /admin/customers/(\d+)$#'                       => [AdminController::class,   'viewCustomer'],
+    '#^POST /admin/customers/(\d+)/update$#'               => [AdminController::class,   'updateCustomer'],
+    '#^POST /admin/customers/(\d+)/add-website$#'          => [AdminController::class,   'addWebsite'],
+    '#^POST /admin/customers/(\d+)/remove-website/(\d+)$#' => [AdminController::class,   'removeWebsite'],
+    '#^POST /admin/customers/(\d+)/toggle$#'               => [AdminController::class,   'toggleCustomer'],
+    '#^POST /account/remove-website/(\d+)$#'               => [AccountController::class, 'removeWebsite'],
     '#^POST /admin/service-status/(\d+)/update$#' => [AdminController::class,  'updateServiceStatus'],
     '#^POST /admin/service-status/(\d+)/delete$#' => [AdminController::class,  'deleteService'],
     '#^GET /admin/tickets/(\d+)$#'              => [AdminController::class,    'viewTicket'],
@@ -105,7 +109,8 @@ $dynamicRoutes = [
 $requestLine = $method . ' ' . $path;
 foreach ($dynamicRoutes as $pattern => [$class, $action]) {
     if (preg_match($pattern, $requestLine, $matches)) {
-        (new $class())->$action((int)$matches[1]);
+        $args = array_map('intval', array_slice($matches, 1));
+        (new $class())->$action(...$args);
         exit;
     }
 }
