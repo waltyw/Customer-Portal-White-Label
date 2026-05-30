@@ -37,10 +37,10 @@
                             <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;padding:10px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
                                 <img src="/assets/img/logo.<?= Security::e($logoExt) ?>?v=<?= filemtime($logoFile) ?>"
                                      alt="Current logo" style="height:32px;width:auto;">
-                                <form method="POST" action="/admin/settings/delete-logo" style="margin:0;" onsubmit="return confirm('Remove this logo?')">
-                                    <?= Security::csrfField() ?>
-                                    <button type="submit" class="btn btn-sm btn-danger-outline">Remove Logo</button>
-                                </form>
+                                <button type="button" class="btn btn-sm btn-danger-outline"
+                                    onclick="if(confirm('Remove this logo?')) document.getElementById('delete-logo-form').submit()">
+                                    Remove Logo
+                                </button>
                             </div>
                             <?php else: ?>
                             <p style="font-size:12px;color:#94a3b8;margin-bottom:10px;">No logo uploaded — portal name shown instead.</p>
@@ -59,10 +59,10 @@
                             <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:8px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
                                 <img src="/assets/img/favicon.<?= Security::e($favExt) ?>?v=<?= filemtime($favFile) ?>"
                                      alt="Favicon" style="width:28px;height:28px;object-fit:contain;">
-                                <form method="POST" action="/admin/settings/delete-favicon" style="margin:0;" onsubmit="return confirm('Remove this favicon?')">
-                                    <?= Security::csrfField() ?>
-                                    <button type="submit" class="btn btn-sm btn-danger-outline">Remove</button>
-                                </form>
+                                <button type="button" class="btn btn-sm btn-danger-outline"
+                                    onclick="if(confirm('Remove this favicon?')) document.getElementById('delete-favicon-form').submit()">
+                                    Remove
+                                </button>
                             </div>
                             <?php else: ?>
                             <p style="font-size:12px;color:#94a3b8;margin-bottom:10px;">No favicon uploaded.</p>
@@ -265,3 +265,11 @@ function resetDefaults() {
 // Run once on load to initialise preview
 updatePreview();
 </script>
+
+<!-- Delete forms outside the main settings form to avoid nesting -->
+<form id="delete-logo-form" method="POST" action="/admin/settings/delete-logo" style="display:none;">
+    <?= Security::csrfField() ?>
+</form>
+<form id="delete-favicon-form" method="POST" action="/admin/settings/delete-favicon" style="display:none;">
+    <?= Security::csrfField() ?>
+</form>
