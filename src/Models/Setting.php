@@ -25,6 +25,7 @@ class Setting
         'logo_ext'             => 'png',
         'favicon_ext'          => 'png',
         'currency_symbol'      => '£',
+        'font_family'          => 'Inter',
         'xero_client_id'       => '',
         'xero_client_secret'   => '',
         'xero_redirect_uri'    => '',
@@ -80,9 +81,11 @@ class Setting
 
     public static function cssVars(): string
     {
-        $s = self::all();
+        $s    = self::all();
+        $font = $s['font_family'] ?: 'Inter';
+        $fontStack = "'{$font}',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
         return sprintf(
-            '<style>:root{--primary:%s;--primary-dark:%s;--sidebar-bg:%s;--sidebar-text:%s;--sidebar-active:%s;--surface:%s;--text:%s;--text-muted:%s;--card-bg:%s;}</style>',
+            '<style>:root{--primary:%s;--primary-dark:%s;--sidebar-bg:%s;--sidebar-text:%s;--sidebar-active:%s;--surface:%s;--text:%s;--text-muted:%s;--card-bg:%s;}body,input,textarea,select,button{font-family:%s;}</style>',
             htmlspecialchars($s['primary_color']),
             htmlspecialchars($s['primary_dark']),
             htmlspecialchars($s['sidebar_bg']),
@@ -91,7 +94,16 @@ class Setting
             htmlspecialchars($s['body_bg']),
             htmlspecialchars($s['text_color']),
             htmlspecialchars($s['text_muted']),
-            htmlspecialchars($s['card_bg'])
+            htmlspecialchars($s['card_bg']),
+            $fontStack
         );
+    }
+
+    public static function googleFontUrl(): string
+    {
+        $font = self::get('font_family') ?: 'Inter';
+        if ($font === 'Inter') return ''; // Already loaded from Google Fonts in layout
+        return 'https://fonts.googleapis.com/css2?family='
+            . urlencode($font) . ':wght@400;500;600;700&display=swap';
     }
 }

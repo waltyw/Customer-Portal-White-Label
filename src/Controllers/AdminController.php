@@ -683,6 +683,7 @@ class AdminController
             'card_bg'         => $_POST['card_bg']         ?? '#ffffff',
             'support_email'   => trim($_POST['support_email'] ?? ''),
             'currency_symbol' => trim($_POST['currency_symbol'] ?? '£') ?: '£',
+            'font_family'     => trim($_POST['font_family'] ?? 'Inter') ?: 'Inter',
         ]);
 
         // Project root = portal_private/ = 2 levels up from src/Controllers/

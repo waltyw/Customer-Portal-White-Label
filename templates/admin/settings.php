@@ -70,10 +70,32 @@
                             <input type="file" name="favicon" accept=".png,.ico,.svg">
                         </div>
                     </div>
-                    <div class="form-group" style="max-width:200px;">
-                        <label>Currency Symbol</label>
-                        <input type="text" name="currency_symbol" value="<?= Security::e($settings['currency_symbol'] ?? '£') ?>" maxlength="3" placeholder="£">
-                        <small style="color:#64748b;font-size:12px;">Shown on invoices and dashboard (e.g. £ $ €)</small>
+                    <div class="form-row">
+                        <div class="form-group" style="max-width:200px;">
+                            <label>Currency Symbol</label>
+                            <input type="text" name="currency_symbol" value="<?= Security::e($settings['currency_symbol'] ?? '£') ?>" maxlength="3" placeholder="£">
+                            <small style="color:#64748b;font-size:12px;">e.g. £ $ €</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Font</label>
+                            <?php
+                            $fonts = [
+                                'Inter','Roboto','Open Sans','Lato','Montserrat','Poppins',
+                                'Raleway','Nunito','Source Sans 3','Ubuntu','Josefin Sans',
+                                'Quicksand','Playfair Display','Merriweather','PT Sans',
+                            ];
+                            $currentFont = $settings['font_family'] ?? 'Inter';
+                            ?>
+                            <select name="font_family" id="font-select" onchange="previewFont(this.value)">
+                                <?php foreach ($fonts as $f): ?>
+                                <option value="<?= Security::e($f) ?>" <?= $f === $currentFont ? 'selected' : '' ?>><?= Security::e($f) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <div id="font-preview" style="margin-top:8px;padding:12px 16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;font-size:18px;color:#1e293b;transition:font-family .3s;">
+                                The quick brown fox jumps over the lazy dog
+                            </div>
+                            <small style="color:#64748b;font-size:12px;">Preview updates as you change selection. Save to apply site-wide.</small>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -264,6 +286,22 @@ function resetDefaults() {
 
 // Run once on load to initialise preview
 updatePreview();
+
+// Google Font live preview
+const loadedFonts = new Set(['Inter']);
+function previewFont(fontName) {
+    const preview = document.getElementById('font-preview');
+    if (!loadedFonts.has(fontName)) {
+        const link = document.createElement('link');
+        link.rel  = 'stylesheet';
+        link.href = 'https://fonts.googleapis.com/css2?family=' + encodeURIComponent(fontName) + ':wght@400;500;600;700&display=swap';
+        document.head.appendChild(link);
+        loadedFonts.add(fontName);
+    }
+    preview.style.fontFamily = "'" + fontName + "', sans-serif";
+}
+// Set initial preview font
+previewFont(document.getElementById('font-select').value);
 </script>
 
 <!-- Delete forms outside the main settings form to avoid nesting -->
