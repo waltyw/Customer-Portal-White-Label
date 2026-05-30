@@ -80,9 +80,13 @@
                             <label>Font</label>
                             <?php
                             $fonts = [
+                                // Sans-serif — clean & modern
                                 'Inter','Roboto','Open Sans','Lato','Montserrat','Poppins',
                                 'Raleway','Nunito','Source Sans 3','Ubuntu','Josefin Sans',
-                                'Quicksand','Playfair Display','Merriweather','PT Sans',
+                                'Quicksand','Figtree','DM Sans','Plus Jakarta Sans',
+                                // Serif — traditional & editorial
+                                'Playfair Display','Merriweather','PT Sans','Lora','Bitter',
+                                // Add more here — use the exact name from fonts.google.com
                             ];
                             $currentFont = $settings['font_family'] ?? 'Inter';
                             ?>
