@@ -80,8 +80,10 @@ $routes = [
     'GET /admin/invoices'          => [AdminController::class,     'invoices'],
     'GET /admin/invoices/create'   => [AdminController::class,     'createInvoice'],
     'POST /admin/invoices/create'  => [AdminController::class,     'storeInvoice'],
-    'GET /admin/settings'          => [AdminController::class,     'settings'],
-    'POST /admin/settings'         => [AdminController::class,     'saveSettings'],
+    'GET /admin/settings'              => [AdminController::class,  'settings'],
+    'POST /admin/settings'             => [AdminController::class,  'saveSettings'],
+    'POST /admin/settings/delete-logo'    => [AdminController::class,  'deleteLogo'],
+    'POST /admin/settings/delete-favicon' => [AdminController::class,  'deleteFavicon'],
 ];
 
 $key = $method . ' ' . $path;

@@ -28,24 +28,45 @@
                     <div class="form-row">
                         <div class="form-group" style="flex:3;">
                             <label>Logo <span class="hint">(PNG, JPG, SVG or WebP — max 2MB)</span></label>
-                            <div style="display:flex;align-items:center;gap:16px;margin-bottom:10px;">
-                                <img src="/assets/img/logo.<?= Security::e($settings['logo_ext'] ?? 'png') ?>"
-                                     alt="Current logo"
-                                     style="height:36px;width:auto;background:#f1f5f9;padding:5px 10px;border-radius:8px;border:1px solid #e2e8f0;">
-                                <span style="font-size:12px;color:#94a3b8;">Current logo</span>
+                            <?php
+                            $logoExt  = $settings['logo_ext'] ?? '';
+                            $logoFile = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/logo.' . $logoExt;
+                            $hasLogo  = $logoExt && file_exists($logoFile);
+                            ?>
+                            <?php if ($hasLogo): ?>
+                            <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;padding:10px 14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
+                                <img src="/assets/img/logo.<?= Security::e($logoExt) ?>?v=<?= filemtime($logoFile) ?>"
+                                     alt="Current logo" style="height:32px;width:auto;">
+                                <form method="POST" action="/admin/settings/delete-logo" style="margin:0;" onsubmit="return confirm('Remove this logo?')">
+                                    <?= Security::csrfField() ?>
+                                    <button type="submit" class="btn btn-sm btn-danger-outline">Remove Logo</button>
+                                </form>
                             </div>
+                            <?php else: ?>
+                            <p style="font-size:12px;color:#94a3b8;margin-bottom:10px;">No logo uploaded — portal name shown instead.</p>
+                            <?php endif; ?>
                             <input type="file" name="logo" accept=".png,.jpg,.jpeg,.gif,.svg,.webp">
                             <small style="color:#64748b;font-size:12px;">Leave blank to keep existing logo.</small>
                         </div>
                         <div class="form-group" style="flex:1;">
                             <label>Favicon <span class="hint">(PNG, SVG or ICO — max 512KB)</span></label>
-                            <?php $favExt = $settings['favicon_ext'] ?? 'png'; ?>
-                            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                                <img src="/assets/img/favicon.<?= Security::e($favExt) ?>?v=<?= time() ?>"
-                                     alt="Favicon" style="width:32px;height:32px;object-fit:contain;border:1px solid #e2e8f0;border-radius:4px;padding:2px;"
-                                     onerror="this.style.display='none'">
-                                <span style="font-size:12px;color:#94a3b8;">Current favicon</span>
+                            <?php
+                            $favExt  = $settings['favicon_ext'] ?? '';
+                            $favFile = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/favicon.' . $favExt;
+                            $hasFav  = $favExt && file_exists($favFile);
+                            ?>
+                            <?php if ($hasFav): ?>
+                            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:8px 12px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
+                                <img src="/assets/img/favicon.<?= Security::e($favExt) ?>?v=<?= filemtime($favFile) ?>"
+                                     alt="Favicon" style="width:28px;height:28px;object-fit:contain;">
+                                <form method="POST" action="/admin/settings/delete-favicon" style="margin:0;" onsubmit="return confirm('Remove this favicon?')">
+                                    <?= Security::csrfField() ?>
+                                    <button type="submit" class="btn btn-sm btn-danger-outline">Remove</button>
+                                </form>
                             </div>
+                            <?php else: ?>
+                            <p style="font-size:12px;color:#94a3b8;margin-bottom:10px;">No favicon uploaded.</p>
+                            <?php endif; ?>
                             <input type="file" name="favicon" accept=".png,.ico,.svg">
                         </div>
                     </div>

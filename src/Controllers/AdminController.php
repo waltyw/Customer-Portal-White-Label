@@ -629,6 +629,42 @@ class AdminController
         ], 'admin');
     }
 
+    public function deleteLogo(): void
+    {
+        Auth::requireAdmin();
+        Security::checkCsrf();
+
+        $imgDir = dirname(__DIR__, 2) . '/public/assets/img/';
+        $ext    = Setting::get('logo_ext') ?: 'png';
+        $file   = $imgDir . 'logo.' . $ext;
+
+        if (file_exists($file)) {
+            unlink($file);
+        }
+        Setting::set('logo_ext', '');
+
+        Security::flash('success', 'Logo removed.');
+        Security::redirect('/admin/settings');
+    }
+
+    public function deleteFavicon(): void
+    {
+        Auth::requireAdmin();
+        Security::checkCsrf();
+
+        $imgDir = dirname(__DIR__, 2) . '/public/assets/img/';
+        $ext    = Setting::get('favicon_ext') ?: 'png';
+        $file   = $imgDir . 'favicon.' . $ext;
+
+        if (file_exists($file)) {
+            unlink($file);
+        }
+        Setting::set('favicon_ext', '');
+
+        Security::flash('success', 'Favicon removed.');
+        Security::redirect('/admin/settings');
+    }
+
     public function saveSettings(): void
     {
         Auth::requireAdmin();
