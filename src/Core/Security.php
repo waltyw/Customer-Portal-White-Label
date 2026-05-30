@@ -13,7 +13,7 @@ class Security
         header('X-XSS-Protection: 1; mode=block');
         header('Referrer-Policy: strict-origin-when-cross-origin');
         header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
-        header("Content-Security-Policy: default-src 'self'; script-src 'self' https://js.stripe.com https://cdn.quilljs.com 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.quilljs.com; font-src 'self' https://fonts.gstatic.com https://cdn.quilljs.com; frame-src https://js.stripe.com; img-src 'self' data:; connect-src 'self' https://api.stripe.com;");
+        header("Content-Security-Policy: default-src 'self'; script-src 'self' https://js.stripe.com https://cdn.quilljs.com https://cdn.jsdelivr.net 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.quilljs.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdn.quilljs.com https://cdn.jsdelivr.net; frame-src https://js.stripe.com; img-src 'self' data:; connect-src 'self' https://api.stripe.com;");
     }
 
     public static function csrfToken(): string

@@ -1,5 +1,5 @@
 <?php use App\Core\Security; ?>
-<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.snow.css" rel="stylesheet">
 
 <div class="page-header">
     <h1>Manage FAQs</h1>
@@ -64,7 +64,7 @@
 
 </div>
 
-<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/quill@1.3.7/dist/quill.min.js"></script>
 <script>
 const addQuill = new Quill('#add-quill-editor', {
     theme: 'snow',
