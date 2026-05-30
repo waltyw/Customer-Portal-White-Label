@@ -20,7 +20,16 @@ $user = \App\Auth\Auth::user();
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-brand">
-            <a href="/dashboard"><img src="/assets/img/logo.png" alt="Beebizzi" class="sidebar-logo-img"></a>
+            <?php
+            $logoExt  = \App\Models\Setting::get('logo_ext') ?: 'png';
+            $logoFile = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/logo.' . $logoExt;
+            $appName  = \App\Models\Setting::get('app_name') ?: 'Portal';
+            ?>
+            <?php if (file_exists($logoFile)): ?>
+            <a href="/dashboard"><img src="/assets/img/logo.<?= $logoExt ?>?v=<?= filemtime($logoFile) ?>" alt="<?= \App\Core\Security::e($appName) ?>" class="sidebar-logo-img"></a>
+            <?php else: ?>
+            <a href="/dashboard" style="color:#fff;font-size:16px;font-weight:700;text-decoration:none;padding:8px 0;"><?= \App\Core\Security::e($appName) ?></a>
+            <?php endif; ?>
         </div>
         <nav class="sidebar-nav">
             <a href="/dashboard" class="nav-item <?= $currentPath === '/dashboard' ? 'active' : '' ?>">

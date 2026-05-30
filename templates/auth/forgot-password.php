@@ -13,7 +13,16 @@
 <div class="auth-container">
     <div class="auth-card">
         <div class="auth-header">
-            <img src="/assets/img/logo.png" alt="Beebizzi" class="auth-logo-img">
+            <?php
+            $logoExt  = \App\Models\Setting::get('logo_ext') ?: 'png';
+            $logoFile = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/logo.' . $logoExt;
+            $appName  = \App\Models\Setting::get('app_name') ?: 'Customer Portal';
+            ?>
+            <?php if (file_exists($logoFile)): ?>
+            <img src="/assets/img/logo.<?= $logoExt ?>?v=<?= filemtime($logoFile) ?>" alt="<?= \App\Core\Security::e($appName) ?>" class="auth-logo-img">
+            <?php else: ?>
+            <div class="auth-logo"><?= \App\Core\Security::e(mb_substr($appName, 0, 1)) ?></div>
+            <?php endif; ?>
             <h1>Reset Password</h1>
             <p>We'll email you a reset link</p>
         </div>

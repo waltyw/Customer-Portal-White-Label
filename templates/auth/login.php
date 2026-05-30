@@ -13,7 +13,17 @@
 <div class="auth-container">
     <div class="auth-card">
         <div class="auth-header">
-            <img src="/assets/img/logo.png" alt="Beebizzi" class="auth-logo-img">
+            <?php
+            $logoExt  = \App\Models\Setting::get('logo_ext') ?: 'png';
+            $logoFile = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/logo.' . $logoExt;
+            $appName  = \App\Models\Setting::get('app_name') ?: 'Customer Portal';
+            ?>
+            <?php if (file_exists($logoFile)): ?>
+            <img src="/assets/img/logo.<?= $logoExt ?>?v=<?= filemtime($logoFile) ?>" alt="<?= \App\Core\Security::e($appName) ?>" class="auth-logo-img">
+            <?php else: ?>
+            <div class="auth-logo"><?= \App\Core\Security::e(mb_substr($appName, 0, 1)) ?></div>
+            <h1><?= \App\Core\Security::e($appName) ?></h1>
+            <?php endif; ?>
             <p>Sign in to your account</p>
         </div>
 

@@ -315,7 +315,7 @@ $icons = ['operational'=>'✅','degraded'=>'⚠️','outage'=>'🔴','maintenanc
             <svg class="faq-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
         <div class="faq-body">
-            <p style="font-size:14px;color:#374151;line-height:1.7;"><?= nl2br(Security::e($faq['answer'])) ?></p>
+            <div style="font-size:14px;color:#374151;line-height:1.7;" class="faq-rich-content"><?= $faq['answer'] ?></div>
         </div>
     </div>
     <?php endforeach; ?>
@@ -366,6 +366,13 @@ $icons = ['operational'=>'✅','degraded'=>'⚠️','outage'=>'🔴','maintenanc
 }
 
 .faq-list { display: flex; flex-direction: column; gap: 8px; max-width: 800px; }
+.faq-rich-content ul, .faq-rich-content ol { padding-left: 20px; margin: 6px 0; }
+.faq-rich-content li { margin-bottom: 4px; }
+.faq-rich-content p { margin-bottom: 6px; }
+.faq-rich-content strong { font-weight: 600; }
+.faq-rich-content h2, .faq-rich-content h3 { font-weight: 600; margin: 10px 0 4px; }
+.faq-rich-content blockquote { border-left: 3px solid #e2e8f0; padding-left: 12px; color: #64748b; margin: 8px 0; }
+.faq-rich-content a { color: #2563eb; }
 .faq-item { background: white; border: 1px solid #e2e8f0; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
 .faq-trigger {
     width: 100%; display: flex; align-items: center; justify-content: space-between;
