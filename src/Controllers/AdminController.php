@@ -721,7 +721,26 @@ class AdminController
             'currency_symbol'  => trim($_POST['currency_symbol'] ?? '£') ?: '£',
             'font_family'      => trim($_POST['font_family'] ?? 'Inter') ?: 'Inter',
             'invoices_enabled' => isset($_POST['invoices_enabled']) ? '1' : '0',
+            'logo_link_url'    => trim($_POST['logo_link_url'] ?? ''),
         ]);
+
+        // Save custom menu links as JSON
+        $labels   = $_POST['link_label'] ?? [];
+        $urls     = $_POST['link_url']   ?? [];
+        $newTabs  = $_POST['link_newtab'] ?? [];
+        $links    = [];
+        foreach ($labels as $i => $label) {
+            $label = trim($label);
+            $url   = trim($urls[$i] ?? '');
+            if ($label && $url) {
+                $links[] = [
+                    'label'   => $label,
+                    'url'     => $url,
+                    'new_tab' => isset($newTabs[$i]),
+                ];
+            }
+        }
+        Setting::set('menu_links', json_encode($links));
 
         // Project root = portal_private/ = 2 levels up from src/Controllers/
         $imgDir = dirname(__DIR__, 2) . '/public/assets/img/';

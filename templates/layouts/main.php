@@ -21,6 +21,9 @@ $currentPath  = '/' . trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/'
 $user         = \App\Auth\Auth::user();
 $showInvoices = \App\Models\Setting::get('invoices_enabled') !== '0'
              && ($user['show_invoices'] ?? 1);
+$logoLinkUrl  = \App\Models\Setting::get('logo_link_url') ?: '/dashboard';
+$logoLinkTarget = str_starts_with($logoLinkUrl, 'http') ? ' target="_blank" rel="noopener"' : '';
+$customLinks  = \App\Models\Setting::menuLinks();
 ?>
 <div class="layout">
     <!-- Sidebar -->
@@ -32,9 +35,9 @@ $showInvoices = \App\Models\Setting::get('invoices_enabled') !== '0'
             $appName  = \App\Models\Setting::get('app_name') ?: 'Portal';
             ?>
             <?php if (file_exists($logoFile)): ?>
-            <a href="/dashboard"><img src="/assets/img/logo.<?= $logoExt ?>?v=<?= filemtime($logoFile) ?>" alt="<?= \App\Core\Security::e($appName) ?>" class="sidebar-logo-img"></a>
+            <a href="<?= \App\Core\Security::e($logoLinkUrl) ?>"<?= $logoLinkTarget ?>><img src="/assets/img/logo.<?= $logoExt ?>?v=<?= filemtime($logoFile) ?>" alt="<?= \App\Core\Security::e($appName) ?>" class="sidebar-logo-img"></a>
             <?php else: ?>
-            <a href="/dashboard" style="color:#fff;font-size:16px;font-weight:700;text-decoration:none;padding:8px 0;"><?= \App\Core\Security::e($appName) ?></a>
+            <a href="<?= \App\Core\Security::e($logoLinkUrl) ?>"<?= $logoLinkTarget ?> style="color:#fff;font-size:16px;font-weight:700;text-decoration:none;padding:8px 0;"><?= \App\Core\Security::e($appName) ?></a>
             <?php endif; ?>
         </div>
         <nav class="sidebar-nav">
@@ -60,6 +63,17 @@ $showInvoices = \App\Models\Setting::get('invoices_enabled') !== '0'
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 My Account
             </a>
+            <?php if (!empty($customLinks)): ?>
+            <div style="height:1px;background:rgba(255,255,255,.06);margin:8px 0;"></div>
+            <?php foreach ($customLinks as $link): ?>
+            <a href="<?= \App\Core\Security::e($link['url']) ?>"
+               class="nav-item"
+               <?= !empty($link['new_tab']) ? 'target="_blank" rel="noopener"' : '' ?>>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                <?= \App\Core\Security::e($link['label']) ?>
+            </a>
+            <?php endforeach; ?>
+            <?php endif; ?>
         </nav>
         <div class="sidebar-footer">
             <div class="user-info">

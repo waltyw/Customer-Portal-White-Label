@@ -27,6 +27,8 @@ class Setting
         'currency_symbol'      => '£',
         'font_family'          => 'Inter',
         'invoices_enabled'     => '1',
+        'logo_link_url'        => '',
+        'menu_links'           => '[]',
         'xero_client_id'       => '',
         'xero_client_secret'   => '',
         'xero_redirect_uri'    => '',
@@ -98,6 +100,13 @@ class Setting
             htmlspecialchars($s['card_bg']),
             $fontStack
         );
+    }
+
+    public static function menuLinks(): array
+    {
+        $raw = self::get('menu_links') ?: '[]';
+        $decoded = json_decode($raw, true);
+        return is_array($decoded) ? $decoded : [];
     }
 
     public static function googleFontUrl(): string

@@ -21,14 +21,16 @@ $user = \App\Auth\Auth::user();
     <aside class="sidebar sidebar-admin">
         <div class="sidebar-brand">
             <?php
-            $logoExt  = \App\Models\Setting::get('logo_ext') ?: 'png';
-            $logoFile = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/logo.' . $logoExt;
-            $appName  = \App\Models\Setting::get('app_name') ?: 'Admin';
+            $logoExt     = \App\Models\Setting::get('logo_ext') ?: 'png';
+            $logoFile    = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/logo.' . $logoExt;
+            $appName     = \App\Models\Setting::get('app_name') ?: 'Admin';
+            $logoLink    = \App\Models\Setting::get('logo_link_url') ?: '/admin';
+            $logoTarget  = str_starts_with($logoLink, 'http') ? ' target="_blank" rel="noopener"' : '';
             ?>
             <?php if (file_exists($logoFile)): ?>
-            <a href="/admin"><img src="/assets/img/logo.<?= $logoExt ?>?v=<?= filemtime($logoFile) ?>" alt="<?= \App\Core\Security::e($appName) ?>" class="sidebar-logo-img"></a>
+            <a href="<?= \App\Core\Security::e($logoLink) ?>"<?= $logoTarget ?>><img src="/assets/img/logo.<?= $logoExt ?>?v=<?= filemtime($logoFile) ?>" alt="<?= \App\Core\Security::e($appName) ?>" class="sidebar-logo-img"></a>
             <?php else: ?>
-            <a href="/admin" style="color:#fff;font-size:16px;font-weight:700;text-decoration:none;padding:8px 0;"><?= \App\Core\Security::e($appName) ?></a>
+            <a href="<?= \App\Core\Security::e($logoLink) ?>"<?= $logoTarget ?> style="color:#fff;font-size:16px;font-weight:700;text-decoration:none;padding:8px 0;"><?= \App\Core\Security::e($appName) ?></a>
             <?php endif; ?>
         </div>
         <nav class="sidebar-nav">

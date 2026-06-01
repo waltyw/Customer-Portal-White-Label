@@ -71,6 +71,14 @@
                         </div>
                     </div>
                     <div class="form-group">
+                        <label>Logo / Brand Link URL</label>
+                        <input type="text" name="logo_link_url"
+                               value="<?= Security::e($settings['logo_link_url'] ?? '') ?>"
+                               placeholder="https://beebizzi.co.uk (leave blank for dashboard)">
+                        <small style="color:#64748b;font-size:12px;">Where clicking the logo takes users. Defaults to the dashboard if blank. External URLs open in a new tab automatically.</small>
+                    </div>
+
+                    <div class="form-group">
                         <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;max-width:400px;">
                             <input type="checkbox" name="invoices_enabled" value="1" <?= ($settings['invoices_enabled'] ?? '1') === '1' ? 'checked' : '' ?> style="width:16px;height:16px;">
                             <div>
@@ -111,6 +119,41 @@
                             <small style="color:#64748b;font-size:12px;">Preview updates as you change selection. Save to apply site-wide.</small>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Custom menu links -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>Custom Sidebar Links</h2>
+                    <span style="font-size:12px;color:#94a3b8;">Appear in the customer sidebar below the main nav</span>
+                </div>
+                <div class="card-body">
+                    <table style="width:100%;border-collapse:collapse;" id="links-table">
+                        <thead>
+                            <tr style="font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:.4px;">
+                                <th style="padding:4px 8px 8px 0;text-align:left;">Label</th>
+                                <th style="padding:4px 8px 8px;text-align:left;">URL</th>
+                                <th style="padding:4px 8px 8px;text-align:center;width:80px;">New Tab</th>
+                                <th style="width:40px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="links-body">
+                        <?php
+                        $existingLinks = \App\Models\Setting::menuLinks();
+                        foreach ($existingLinks as $i => $link):
+                        ?>
+                        <tr class="link-row">
+                            <td style="padding:4px 8px 4px 0;"><input type="text" name="link_label[]" value="<?= Security::e($link['label']) ?>" placeholder="e.g. Main Website" style="width:100%;"></td>
+                            <td style="padding:4px 8px;"><input type="text" name="link_url[]" value="<?= Security::e($link['url']) ?>" placeholder="https://..." style="width:100%;"></td>
+                            <td style="padding:4px 8px;text-align:center;"><input type="checkbox" name="link_newtab[<?= $i ?>]" value="1" <?= !empty($link['new_tab']) ? 'checked' : '' ?>></td>
+                            <td style="padding:4px 0;"><button type="button" class="btn btn-sm btn-danger-outline" onclick="this.closest('tr').remove()">×</button></td>
+                        </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                    <button type="button" class="btn btn-outline btn-sm" style="margin-top:10px;" onclick="addLinkRow()">+ Add Link</button>
+                    <small style="display:block;margin-top:6px;color:#64748b;font-size:12px;">Links with an external URL (starting with http) automatically open in a new tab and show an external link icon.</small>
                 </div>
             </div>
 
@@ -300,6 +343,24 @@ function resetDefaults() {
 
 // Run once on load to initialise preview
 updatePreview();
+
+// Custom link row counter (for unique checkbox names)
+let linkRowIndex = <?= count(\App\Models\Setting::menuLinks()) ?>;
+
+function addLinkRow() {
+    const tbody = document.getElementById('links-body');
+    const tr = document.createElement('tr');
+    tr.className = 'link-row';
+    tr.innerHTML = `
+        <td style="padding:4px 8px 4px 0;"><input type="text" name="link_label[]" placeholder="e.g. WHM Login" style="width:100%;"></td>
+        <td style="padding:4px 8px;"><input type="text" name="link_url[]" placeholder="https://..." style="width:100%;"></td>
+        <td style="padding:4px 8px;text-align:center;"><input type="checkbox" name="link_newtab[${linkRowIndex}]" value="1" checked></td>
+        <td style="padding:4px 0;"><button type="button" class="btn btn-sm btn-danger-outline" onclick="this.closest('tr').remove()">×</button></td>
+    `;
+    tbody.appendChild(tr);
+    linkRowIndex++;
+    tr.querySelector('input[type=text]').focus();
+}
 
 // Google Font live preview
 const loadedFonts = new Set(['Inter']);
