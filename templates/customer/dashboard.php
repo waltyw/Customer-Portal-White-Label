@@ -1,6 +1,8 @@
 <?php
 use App\Core\Security;
 use App\Models\ServiceStatus;
+use App\Models\Setting;
+$showInvoices = Setting::get('invoices_enabled') !== '0' && ($user['show_invoices'] ?? 1);
 ?>
 <div class="page-header">
     <h1>Welcome back, <?= Security::e(explode(' ', $_SESSION['user_name'] ?? 'there')[0]) ?></h1>
@@ -37,6 +39,7 @@ $worst    = $overallStatus;
             <div class="stat-label">Support Tickets</div>
         </div>
     </div>
+    <?php if ($showInvoices): ?>
     <div class="stat-card">
         <div class="stat-icon" style="background:#fef9c3;color:#ca8a04;">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
@@ -56,6 +59,7 @@ $worst    = $overallStatus;
             <div class="stat-label">Outstanding Balance</div>
         </div>
     </div>
+    <?php endif; ?>
 </div>
 
 <div class="grid-2">
@@ -86,6 +90,7 @@ $worst    = $overallStatus;
         </div>
     </div>
 
+    <?php if ($showInvoices): ?>
     <div class="card">
         <div class="card-header">
             <h2>Recent Invoices</h2>
@@ -112,4 +117,5 @@ $worst    = $overallStatus;
             <?php endif; ?>
         </div>
     </div>
+    <?php endif; ?>
 </div>

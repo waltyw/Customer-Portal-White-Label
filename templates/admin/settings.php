@@ -70,6 +70,16 @@
                             <input type="file" name="favicon" accept=".png,.ico,.svg">
                         </div>
                     </div>
+                    <div class="form-group">
+                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:14px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;max-width:400px;">
+                            <input type="checkbox" name="invoices_enabled" value="1" <?= ($settings['invoices_enabled'] ?? '1') === '1' ? 'checked' : '' ?> style="width:16px;height:16px;">
+                            <div>
+                                <div style="font-weight:600;font-size:14px;">Enable Invoices &amp; Payments globally</div>
+                                <div style="font-size:12px;color:#64748b;">Uncheck to hide invoices from ALL customers regardless of individual settings</div>
+                            </div>
+                        </label>
+                    </div>
+
                     <div class="form-row">
                         <div class="form-group" style="max-width:200px;">
                             <label>Currency Symbol</label>

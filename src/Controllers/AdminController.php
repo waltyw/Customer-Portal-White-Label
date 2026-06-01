@@ -346,6 +346,21 @@ class AdminController
         Security::redirect('/admin/customers/' . $id);
     }
 
+    public function toggleInvoices(int $id): void
+    {
+        Auth::requireAdmin();
+        Security::checkCsrf();
+        \App\Core\DB::execute(
+            'UPDATE users SET show_invoices = NOT show_invoices WHERE id = ?', [$id]
+        );
+        $customer = User::find($id);
+        $msg = ($customer['show_invoices'] ?? 1)
+            ? 'Invoices are now visible to this customer.'
+            : 'Invoices are now hidden from this customer.';
+        Security::flash('success', $msg);
+        Security::redirect('/admin/customers/' . $id);
+    }
+
     // ── Tickets ───────────────────────────────────────────────────────────────
 
     public function tickets(): void
@@ -682,8 +697,9 @@ class AdminController
             'text_muted'      => $_POST['text_muted']      ?? '#64748b',
             'card_bg'         => $_POST['card_bg']         ?? '#ffffff',
             'support_email'   => trim($_POST['support_email'] ?? ''),
-            'currency_symbol' => trim($_POST['currency_symbol'] ?? '£') ?: '£',
-            'font_family'     => trim($_POST['font_family'] ?? 'Inter') ?: 'Inter',
+            'currency_symbol'  => trim($_POST['currency_symbol'] ?? '£') ?: '£',
+            'font_family'      => trim($_POST['font_family'] ?? 'Inter') ?: 'Inter',
+            'invoices_enabled' => isset($_POST['invoices_enabled']) ? '1' : '0',
         ]);
 
         // Project root = portal_private/ = 2 levels up from src/Controllers/

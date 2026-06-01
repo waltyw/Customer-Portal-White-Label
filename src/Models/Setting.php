@@ -26,6 +26,7 @@ class Setting
         'favicon_ext'          => 'png',
         'currency_symbol'      => '£',
         'font_family'          => 'Inter',
+        'invoices_enabled'     => '1',
         'xero_client_id'       => '',
         'xero_client_secret'   => '',
         'xero_redirect_uri'    => '',

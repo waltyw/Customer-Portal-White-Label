@@ -9,12 +9,21 @@ $customerWebsiteUrl = $customer['website_url'] ?? null;
         <h1 style="margin-top:4px;"><?= Security::e($customer['name']) ?></h1>
         <div style="color:#64748b;margin-top:4px;"><?= Security::e($customer['email']) ?></div>
     </div>
-    <form method="POST" action="/admin/customers/<?= $customer['id'] ?>/toggle">
-        <?= Security::csrfField() ?>
-        <button type="submit" class="btn <?= $customer['is_active'] ? 'btn-danger-outline' : 'btn-outline' ?>">
-            <?= $customer['is_active'] ? 'Deactivate Account' : 'Activate Account' ?>
-        </button>
-    </form>
+    <div style="display:flex;gap:10px;">
+        <form method="POST" action="/admin/customers/<?= $customer['id'] ?>/toggle-invoices">
+            <?= Security::csrfField() ?>
+            <button type="submit" class="btn btn-outline btn-sm" title="Toggle invoice visibility for this customer">
+                <?php $showInv = $customer['show_invoices'] ?? 1; ?>
+                <?= $showInv ? '🧾 Hide Invoices' : '🧾 Show Invoices' ?>
+            </button>
+        </form>
+        <form method="POST" action="/admin/customers/<?= $customer['id'] ?>/toggle">
+            <?= Security::csrfField() ?>
+            <button type="submit" class="btn <?= $customer['is_active'] ? 'btn-danger-outline' : 'btn-outline' ?>">
+                <?= $customer['is_active'] ? 'Deactivate Account' : 'Activate Account' ?>
+            </button>
+        </form>
+    </div>
 </div>
 
 <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px;">
@@ -60,7 +69,8 @@ $customerWebsiteUrl = $customer['website_url'] ?? null;
                     <?php $ms = \App\Models\User::mailServer($customerWebsiteUrl); ?>
                     <?= $ms ? Security::e($ms) : '<span style="color:#94a3b8;">—</span>' ?>
                 </td></tr>
-                <tr><td style="color:#64748b;padding:6px 0;">Status</td><td><span class="badge <?= $customer['is_active'] ? 'badge-active' : 'badge-inactive' ?>"><?= $customer['is_active'] ? 'Active' : 'Inactive' ?></span></td></tr>
+                <tr><td style="color:#64748b;padding:6px 0;">Account Status</td><td><span class="badge <?= $customer['is_active'] ? 'badge-active' : 'badge-inactive' ?>"><?= $customer['is_active'] ? 'Active' : 'Inactive' ?></span></td></tr>
+                <tr><td style="color:#64748b;padding:6px 0;">Invoices</td><td><span class="badge <?= ($customer['show_invoices'] ?? 1) ? 'badge-active' : 'badge-inactive' ?>"><?= ($customer['show_invoices'] ?? 1) ? 'Visible to customer' : 'Hidden from customer' ?></span></td></tr>
                 <tr><td style="color:#64748b;padding:6px 0;">Member Since</td><td><?= date('j F Y', strtotime($customer['created_at'])) ?></td></tr>
             </table>
         </div>

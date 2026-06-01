@@ -53,13 +53,14 @@ class User
     public static function update(int $id, array $data): void
     {
         DB::execute(
-            'UPDATE users SET name = ?, company = ?, phone = ?, website_url = ?, is_active = ? WHERE id = ?',
+            'UPDATE users SET name = ?, company = ?, phone = ?, website_url = ?, is_active = ?, show_invoices = ? WHERE id = ?',
             [
                 $data['name'],
                 $data['company'] ?? null,
                 $data['phone'] ?? null,
                 self::normaliseUrl($data['website_url'] ?? null),
                 $data['is_active'] ?? 1,
+                isset($data['show_invoices']) ? (int)$data['show_invoices'] : 1,
                 $id,
             ]
         );

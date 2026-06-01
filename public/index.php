@@ -112,6 +112,7 @@ $dynamicRoutes = [
     '#^POST /admin/customers/(\d+)/add-website$#'          => [AdminController::class,   'addWebsite'],
     '#^POST /admin/customers/(\d+)/remove-website/(\d+)$#' => [AdminController::class,   'removeWebsite'],
     '#^POST /admin/customers/(\d+)/toggle$#'               => [AdminController::class,   'toggleCustomer'],
+    '#^POST /admin/customers/(\d+)/toggle-invoices$#'      => [AdminController::class,   'toggleInvoices'],
     '#^POST /account/remove-website/(\d+)$#'               => [AccountController::class, 'removeWebsite'],
     '#^GET /admin/faqs/(\d+)/edit$#'    => [AdminController::class,  'editFaq'],
     '#^POST /admin/faqs/(\d+)/update$#' => [AdminController::class,  'updateFaq'],
