@@ -10,3 +10,6 @@ storage/attachments/*
 *.log
 .DS_Store
 Thumbs.db
+test.html
+upload-guide.html
+root-htaccess.txt

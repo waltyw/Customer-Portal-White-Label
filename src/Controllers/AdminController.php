@@ -350,14 +350,35 @@ class AdminController
     {
         Auth::requireAdmin();
         Security::checkCsrf();
-        \App\Core\DB::execute(
-            'UPDATE users SET show_invoices = NOT show_invoices WHERE id = ?', [$id]
-        );
-        $customer = User::find($id);
-        $msg = ($customer['show_invoices'] ?? 1)
-            ? 'Invoices are now visible to this customer.'
-            : 'Invoices are now hidden from this customer.';
-        Security::flash('success', $msg);
+
+        try {
+            // Add column if it doesn't exist yet
+            $col = \App\Core\DB::fetchOne(
+                "SELECT COUNT(*) as cnt FROM INFORMATION_SCHEMA.COLUMNS
+                 WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'users' AND COLUMN_NAME = 'show_invoices'"
+            );
+
+            if ((int)($col['cnt'] ?? 0) === 0) {
+                \App\Core\DB::execute(
+                    'ALTER TABLE users ADD COLUMN show_invoices TINYINT(1) NOT NULL DEFAULT 1 AFTER is_active'
+                );
+            }
+
+            \App\Core\DB::execute(
+                'UPDATE users SET show_invoices = NOT show_invoices WHERE id = ?', [$id]
+            );
+
+            $customer = User::find($id);
+            $msg = ($customer['show_invoices'] ?? 1)
+                ? 'Invoices are now visible to this customer.'
+                : 'Invoices are now hidden from this customer.';
+            Security::flash('success', $msg);
+
+        } catch (\Throwable $e) {
+            error_log('toggleInvoices error: ' . $e->getMessage());
+            Security::flash('error', 'Could not update invoice visibility. Error: ' . $e->getMessage());
+        }
+
         Security::redirect('/admin/customers/' . $id);
     }
 
