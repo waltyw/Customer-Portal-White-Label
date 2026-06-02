@@ -756,62 +756,16 @@ code {
     color: #0f172a;
 }
 
-/* ── Mobile header (hidden on desktop) ──────────────────────────────────────── */
-.mobile-header {
-    display: none;
-    align-items: center;
-    padding: 0 16px;
-    height: 56px;
-    background: var(--sidebar-bg);
-    gap: 12px;
-    flex-shrink: 0;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-}
-
-.hamburger {
-    background: none;
-    border: none;
-    color: var(--sidebar-text);
-    cursor: pointer;
-    padding: 6px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color .15s, background .15s;
-    flex-shrink: 0;
-    line-height: 1;
-}
-
-.hamburger:hover { color: #fff; background: rgba(255,255,255,.1); }
-
-.mobile-logo-img {
-    height: 30px;
-    width: auto;
-    background: #fff;
-    border-radius: 6px;
-    padding: 3px 7px;
-    display: block;
-}
-
-.mobile-logo-text {
-    color: #fff;
-    font-size: 15px;
-    font-weight: 700;
-}
-
 /* ── Sidebar overlay ─────────────────────────────────────────────────────────── */
+/* No display:none — rely on opacity + pointer-events to avoid cascade conflicts */
 .sidebar-overlay {
-    display: none;
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,.5);
     z-index: 999;
     opacity: 0;
-    transition: opacity .25s;
     pointer-events: none;
+    transition: opacity .25s;
 }
 
 .sidebar-overlay.is-open {
@@ -825,17 +779,72 @@ code {
     -webkit-overflow-scrolling: touch;
 }
 
-/* ── Responsive ──────────────────────────────────────────────────────────────── */
-@media (max-width: 1024px) {
+/* ── Mobile header — hidden on desktop ───────────────────────────────────────── */
+.mobile-header { display: none; }
+
+/* ── Desktop / large laptop (>1024px) — original sidebar, no changes ─────────── */
+
+/* ── Medium screens — tighten padding, 2-col stats, keep sidebar ─────────────── */
+@media (min-width: 1025px) and (max-width: 1280px) {
     .content-inner { padding: 24px; }
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
-@media (max-width: 768px) {
-    /* Show mobile header */
-    .mobile-header { display: flex; }
+/* ── Mobile + tablet — off-canvas drawer (≤1024px) ──────────────────────────── */
+@media (max-width: 1024px) {
+    body { overflow-x: hidden; }
 
-    /* Sidebar becomes off-canvas drawer */
+    /* Show top bar */
+    .mobile-header {
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+        height: 56px;
+        background: var(--sidebar-bg);
+        gap: 12px;
+        flex-shrink: 0;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .hamburger {
+        background: none;
+        border: none;
+        color: var(--sidebar-text);
+        cursor: pointer;
+        padding: 8px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color .15s, background .15s;
+        flex-shrink: 0;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .hamburger:hover, .hamburger:active {
+        color: #fff;
+        background: rgba(255,255,255,.1);
+    }
+
+    .mobile-logo-img {
+        height: 30px;
+        width: auto;
+        background: #fff;
+        border-radius: 6px;
+        padding: 3px 7px;
+        display: block;
+    }
+
+    .mobile-logo-text {
+        color: #fff;
+        font-size: 15px;
+        font-weight: 700;
+    }
+
+    /* Off-canvas sidebar drawer */
     .sidebar {
         position: fixed;
         top: 0;
@@ -849,10 +858,7 @@ code {
 
     .sidebar.is-open { transform: translateX(0); }
 
-    /* Show overlay */
-    .sidebar-overlay { display: block; }
-
-    /* Keep sidebar nav vertical */
+    /* Keep nav vertical */
     .sidebar-nav {
         flex-direction: column;
         overflow-x: visible;
@@ -860,19 +866,17 @@ code {
         gap: 2px;
     }
 
-    /* Content fills full width */
+    /* Content layout */
     .content-inner { padding: 16px; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
     .grid-2 { grid-template-columns: 1fr; }
     .form-row { flex-direction: column; }
     .page-header { flex-direction: column; align-items: flex-start; }
-
-    /* Payment */
     .payment-amount-value { font-size: 32px; }
-
-    /* Auth card */
     .auth-card { padding: 28px 20px; }
 }
 
+/* ── Small phones (≤480px) ───────────────────────────────────────────────────── */
 @media (max-width: 480px) {
     .stats-grid { grid-template-columns: 1fr; }
     .content-inner { padding: 12px; }

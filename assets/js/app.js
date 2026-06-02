@@ -24,27 +24,38 @@ document.querySelectorAll('.nav-item').forEach(link => {
     }
 });
 
-// Mobile sidebar toggle
-const sidebar = document.getElementById('sidebar');
-const overlay = document.getElementById('sidebarOverlay');
-const toggle  = document.getElementById('sidebarToggle');
+// Mobile sidebar toggle — IIFE avoids variable name conflicts with page scripts
+(function () {
+    var navSidebar = document.getElementById('sidebar');
+    var navOverlay = document.getElementById('sidebarOverlay');
+    var navToggle  = document.getElementById('sidebarToggle');
 
-if (sidebar && overlay && toggle) {
-    const openSidebar  = () => { sidebar.classList.add('is-open'); overlay.classList.add('is-open'); };
-    const closeSidebar = () => { sidebar.classList.remove('is-open'); overlay.classList.remove('is-open'); };
+    if (!navSidebar || !navOverlay || !navToggle) return;
 
-    toggle.addEventListener('click', openSidebar);
-    overlay.addEventListener('click', closeSidebar);
+    function openNav() {
+        navSidebar.classList.add('is-open');
+        navOverlay.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+    }
 
-    sidebar.querySelectorAll('.nav-item').forEach(link => {
-        link.addEventListener('click', closeSidebar);
+    function closeNav() {
+        navSidebar.classList.remove('is-open');
+        navOverlay.classList.remove('is-open');
+        document.body.style.overflow = '';
+    }
+
+    navToggle.addEventListener('click', openNav);
+    navOverlay.addEventListener('click', closeNav);
+
+    navSidebar.querySelectorAll('.nav-item').forEach(function (link) {
+        link.addEventListener('click', closeNav);
     });
-}
+}());
 
 // Auto-wrap tables for horizontal scroll on mobile
-document.querySelectorAll('.table').forEach(table => {
+document.querySelectorAll('.table').forEach(function (table) {
     if (!table.parentElement.classList.contains('table-responsive')) {
-        const wrap = document.createElement('div');
+        var wrap = document.createElement('div');
         wrap.className = 'table-responsive';
         table.parentNode.insertBefore(wrap, table);
         wrap.appendChild(table);
