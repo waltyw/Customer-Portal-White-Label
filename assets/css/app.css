@@ -756,7 +756,7 @@ code {
     color: #0f172a;
 }
 
-/* ── Nav overlay (behind the mobile drawer) ──────────────────────── */
+/* ── Nav overlay (injected by JS on mobile) ─────────────────────── */
 .nav-overlay {
     position: fixed;
     inset: 0;
@@ -768,111 +768,91 @@ code {
 }
 .nav-overlay.is-open { opacity: 1; pointer-events: auto; }
 
-/* ── Table scroll wrapper ──────────────────────────────────────────── */
+/* ── Mobile top bar (injected by JS on mobile) ───────────────────── */
+.mobile-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0 16px;
+    height: 56px;
+    background: var(--sidebar-bg);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    flex-shrink: 0;
+}
+
+.nav-toggle {
+    background: none;
+    border: none;
+    color: var(--sidebar-text);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: color .15s, background .15s;
+}
+.nav-toggle:hover, .nav-toggle:active { color: #fff; background: rgba(255,255,255,.1); }
+
+.mobile-brand { display: flex; align-items: center; }
+.mobile-logo-img { height: 30px; width: auto; background: #fff; border-radius: 6px; padding: 3px 8px; display: block; }
+.mobile-logo-text { color: #fff; font-size: 15px; font-weight: 700; }
+
+/* ── Sidebar drawer state (class added by JS on mobile only) ─────── */
+.sidebar.is-drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 260px;
+    height: auto;
+    z-index: 1000;
+    transform: translateX(-100%);
+    transition: transform .28s cubic-bezier(.4, 0, .2, 1);
+    overflow-y: auto;
+}
+.sidebar.is-drawer.is-open { transform: translateX(0); }
+
+/* ── Table scroll wrapper ────────────────────────────────────────── */
 .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
-/* ── Mobile top bar ─ hidden on desktop ─────────────────────────────────── */
-.mobile-header { display: none; }
+/* ═══════════════════════════════════════════════════════════════════
+   DESKTOP (>1024px) — original sidebar, nothing changed
+   ═══════════════════════════════════════════════════════════════════ */
 
-/* =============================================================================
-   DESKTOP  (>1024px)  —  original sticky sidebar, nothing changed
-   ============================================================================= */
-
-/* Medium screens: tighten padding, keep sidebar visible */
+/* Medium screens: tighten spacing, keep sidebar */
 @media (min-width: 1025px) and (max-width: 1280px) {
     .content-inner { padding: 24px; }
     .stats-grid    { grid-template-columns: repeat(2, 1fr); }
 }
 
-/* =============================================================================
-   MOBILE / TABLET  (≤1024px)  —  off-canvas side drawer
-   ============================================================================= */
+/* ═══════════════════════════════════════════════════════════════════
+   MOBILE / TABLET (<=1024px) — content layout adjustments
+   Note: drawer behaviour is handled by JS + .is-drawer class above
+   ═══════════════════════════════════════════════════════════════════ */
 @media (max-width: 1024px) {
-
-    /* Prevent body scrolling horizontally when drawer is off-screen */
-    body { overflow-x: hidden; }
-
-    /* ── Mobile top bar ──────────────────────────────────────────── */
-    .mobile-header {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        padding: 0 16px;
-        height: 56px;
-        background: var(--sidebar-bg);
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        flex-shrink: 0;
-    }
-
-    .nav-toggle {
-        background: none;
-        border: none;
-        color: var(--sidebar-text);
-        cursor: pointer;
-        padding: 8px;
-        border-radius: 6px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        touch-action: manipulation;
-        -webkit-tap-highlight-color: transparent;
-        transition: color .15s, background .15s;
-    }
-    .nav-toggle:hover,
-    .nav-toggle:active { color: #fff; background: rgba(255,255,255,.1); }
-
-    .mobile-brand { display: flex; align-items: center; }
-
-    .mobile-logo-img {
-        height: 30px;
-        width: auto;
-        background: #fff;
-        border-radius: 6px;
-        padding: 3px 8px;
-        display: block;
-    }
-
-    .mobile-logo-text { color: #fff; font-size: 15px; font-weight: 700; }
-
-    /* ── Sidebar: off-canvas drawer ──────────────────────────────────── */
-    .sidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        width: 260px;
-        height: auto;
-        z-index: 1000;
-        transform: translateX(-100%);
-        transition: transform .28s cubic-bezier(.4, 0, .2, 1);
-        overflow-y: auto;
-    }
-
-    .sidebar.is-open { transform: translateX(0); }
-
-    /* Keep nav vertical */
-    .sidebar-nav { flex-direction: column; overflow-x: visible; padding: 12px; gap: 2px; }
-
-    /* ── Content ────────────────────────────────────────────────────────────── */
-    .content-inner         { padding: 16px; }
-    .stats-grid            { grid-template-columns: 1fr 1fr; }
-    .grid-2                { grid-template-columns: 1fr; }
-    .form-row              { flex-direction: column; }
-    .page-header           { flex-direction: column; align-items: flex-start; }
-    .payment-amount-value  { font-size: 32px; }
-    .auth-card             { padding: 28px 20px; }
+    body           { overflow-x: hidden; }
+    .content-inner { padding: 16px; }
+    .stats-grid    { grid-template-columns: 1fr 1fr; }
+    .grid-2        { grid-template-columns: 1fr; }
+    .form-row      { flex-direction: column; }
+    .page-header   { flex-direction: column; align-items: flex-start; }
+    .sidebar-nav   { flex-direction: column; overflow-x: visible; padding: 12px; gap: 2px; }
+    .payment-amount-value { font-size: 32px; }
+    .auth-card     { padding: 28px 20px; }
 }
 
-/* ── Small phones (≤480px) ───────────────────────────────────────────── */
+/* ── Small phones (<=480px) ──────────────────────────────────────── */
 @media (max-width: 480px) {
-    .stats-grid            { grid-template-columns: 1fr; }
-    .content-inner         { padding: 12px; }
-    .page-header h1        { font-size: 18px; }
-    .payment-amount-value  { font-size: 26px; }
-    .payment-amount-card   { padding: 20px; }
-    .auth-card             { padding: 24px 16px; }
-    .btn                   { min-height: 44px; }
+    .stats-grid           { grid-template-columns: 1fr; }
+    .content-inner        { padding: 12px; }
+    .page-header h1       { font-size: 18px; }
+    .payment-amount-value { font-size: 26px; }
+    .payment-amount-card  { padding: 20px; }
+    .auth-card            { padding: 24px 16px; }
+    .btn                  { min-height: 44px; }
 }

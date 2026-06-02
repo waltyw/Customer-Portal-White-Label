@@ -15,38 +15,18 @@
 <body>
 <?php
 $currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
-$user        = \App\Auth\Auth::user();
-$logoExt     = \App\Models\Setting::get('logo_ext') ?: 'png';
-$logoFile    = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/logo.' . $logoExt;
-$appName     = \App\Models\Setting::get('app_name') ?: 'Admin';
-$logoLink    = \App\Models\Setting::get('logo_link_url') ?: '/admin';
-$logoTarget  = str_starts_with($logoLink, 'http') ? ' target="_blank" rel="noopener"' : '';
+$user = \App\Auth\Auth::user();
 ?>
-
-<!-- Mobile top bar: hidden on desktop, shown on mobile via CSS -->
-<header class="mobile-header">
-    <button class="nav-toggle" id="sidebarToggle" aria-label="Open menu">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <line x1="3" y1="6" x2="21" y2="6"/>
-            <line x1="3" y1="12" x2="21" y2="12"/>
-            <line x1="3" y1="18" x2="21" y2="18"/>
-        </svg>
-    </button>
-    <div class="mobile-brand">
-        <?php if (file_exists($logoFile)): ?>
-        <img src="/assets/img/logo.<?= $logoExt ?>?v=<?= filemtime($logoFile) ?>" alt="<?= \App\Core\Security::e($appName) ?>" class="mobile-logo-img">
-        <?php else: ?>
-        <span class="mobile-logo-text"><?= \App\Core\Security::e($appName) ?></span>
-        <?php endif; ?>
-    </div>
-</header>
-
-<!-- Backdrop overlay — appears behind open drawer on mobile -->
-<div class="nav-overlay" id="navOverlay"></div>
-
 <div class="layout">
-    <aside class="sidebar sidebar-admin" id="sidebar">
+    <aside class="sidebar sidebar-admin">
         <div class="sidebar-brand">
+            <?php
+            $logoExt     = \App\Models\Setting::get('logo_ext') ?: 'png';
+            $logoFile    = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/logo.' . $logoExt;
+            $appName     = \App\Models\Setting::get('app_name') ?: 'Admin';
+            $logoLink    = \App\Models\Setting::get('logo_link_url') ?: '/admin';
+            $logoTarget  = str_starts_with($logoLink, 'http') ? ' target="_blank" rel="noopener"' : '';
+            ?>
             <?php if (file_exists($logoFile)): ?>
             <a href="<?= \App\Core\Security::e($logoLink) ?>"<?= $logoTarget ?>><img src="/assets/img/logo.<?= $logoExt ?>?v=<?= filemtime($logoFile) ?>" alt="<?= \App\Core\Security::e($appName) ?>" class="sidebar-logo-img"></a>
             <?php else: ?>
