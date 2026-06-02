@@ -23,3 +23,30 @@ document.querySelectorAll('.nav-item').forEach(link => {
         link.classList.add('active');
     }
 });
+
+// Mobile sidebar toggle
+const sidebar = document.getElementById('sidebar');
+const overlay = document.getElementById('sidebarOverlay');
+const toggle  = document.getElementById('sidebarToggle');
+
+if (sidebar && overlay && toggle) {
+    const openSidebar  = () => { sidebar.classList.add('is-open'); overlay.classList.add('is-open'); };
+    const closeSidebar = () => { sidebar.classList.remove('is-open'); overlay.classList.remove('is-open'); };
+
+    toggle.addEventListener('click', openSidebar);
+    overlay.addEventListener('click', closeSidebar);
+
+    sidebar.querySelectorAll('.nav-item').forEach(link => {
+        link.addEventListener('click', closeSidebar);
+    });
+}
+
+// Auto-wrap tables for horizontal scroll on mobile
+document.querySelectorAll('.table').forEach(table => {
+    if (!table.parentElement.classList.contains('table-responsive')) {
+        const wrap = document.createElement('div');
+        wrap.className = 'table-responsive';
+        table.parentNode.insertBefore(wrap, table);
+        wrap.appendChild(table);
+    }
+});

@@ -18,7 +18,7 @@ $currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/')
 $user = \App\Auth\Auth::user();
 ?>
 <div class="layout">
-    <aside class="sidebar sidebar-admin">
+    <aside class="sidebar sidebar-admin" id="sidebar">
         <div class="sidebar-brand">
             <?php
             $logoExt     = \App\Models\Setting::get('logo_ext') ?: 'png';
@@ -87,6 +87,18 @@ $user = \App\Auth\Auth::user();
     </aside>
 
     <main class="main-content">
+        <header class="mobile-header">
+            <button class="hamburger" id="sidebarToggle" aria-label="Open menu">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <div>
+                <?php if (file_exists($logoFile)): ?>
+                <img src="/assets/img/logo.<?= $logoExt ?>?v=<?= filemtime($logoFile) ?>" alt="<?= \App\Core\Security::e($appName) ?>" class="mobile-logo-img">
+                <?php else: ?>
+                <span class="mobile-logo-text"><?= \App\Core\Security::e($appName) ?></span>
+                <?php endif; ?>
+            </div>
+        </header>
         <div class="content-inner">
             <?php if (isset($flash)): ?>
             <div class="alert alert-<?= \App\Core\Security::e($flash['type']) ?>">
@@ -99,6 +111,7 @@ $user = \App\Auth\Auth::user();
     </main>
 </div>
 
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 <script src="/assets/js/app.js"></script>
 </body>
 </html>
