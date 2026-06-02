@@ -25,32 +25,9 @@ $logoLinkUrl  = \App\Models\Setting::get('logo_link_url') ?: '/dashboard';
 $logoLinkTarget = str_starts_with($logoLinkUrl, 'http') ? ' target="_blank" rel="noopener"' : '';
 $customLinks  = \App\Models\Setting::menuLinks();
 ?>
-<?php
-$logoExt  = \App\Models\Setting::get('logo_ext') ?: 'png';
-$logoFile = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/logo.' . $logoExt;
-$appName  = \App\Models\Setting::get('app_name') ?: 'Portal';
-?>
-<!-- Mobile top bar (hidden on desktop via CSS) -->
-<div class="mobile-topbar">
-    <button class="topbar-hamburger" id="menuOpen" aria-label="Open menu">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-    </button>
-    <?php if (file_exists($logoFile)): ?>
-    <img src="/assets/img/logo.<?= $logoExt ?>?v=<?= filemtime($logoFile) ?>" alt="<?= \App\Core\Security::e($appName) ?>" class="topbar-logo-img">
-    <?php else: ?>
-    <span class="topbar-logo-text"><?= \App\Core\Security::e($appName) ?></span>
-    <?php endif; ?>
-    <div style="width:40px"></div>
-</div>
-<!-- Backdrop (z-30, behind the drawer) -->
-<div class="drawer-backdrop" id="drawerBackdrop"></div>
-
 <div class="layout">
-    <!-- Sidebar: sticky rail on desktop, off-canvas drawer on mobile -->
+    <!-- Sidebar -->
     <aside class="sidebar">
-        <button class="drawer-close-btn" id="menuClose" aria-label="Close menu">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        </button>
         <div class="sidebar-brand">
             <?php
             $logoExt  = \App\Models\Setting::get('logo_ext') ?: 'png';
