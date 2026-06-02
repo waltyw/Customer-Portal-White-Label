@@ -7,97 +7,129 @@
     <?php $favExt = \App\Models\Setting::get('favicon_ext') ?: 'png'; ?>
     <link rel="icon" href="/assets/img/favicon.<?= $favExt ?>" type="<?= $favExt === 'svg' ? 'image/svg+xml' : ($favExt === 'ico' ? 'image/x-icon' : 'image/png') ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <?php $activeFont = \App\Models\Setting::get('font_family') ?: 'Inter'; ?>
+    <?php
+    $activeFont = \App\Models\Setting::get('font_family') ?: 'Inter';
+    $logoExt    = \App\Models\Setting::get('logo_ext') ?: 'png';
+    $logoFile   = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/logo.' . $logoExt;
+    $appName    = \App\Models\Setting::get('app_name') ?: 'Admin';
+    $logoLink   = \App\Models\Setting::get('logo_link_url') ?: '/admin';
+    $logoTarget = str_starts_with($logoLink, 'http') ? ' target="_blank" rel="noopener"' : '';
+    $cssVer     = file_exists($_SERVER['DOCUMENT_ROOT'].'/assets/css/app.css')
+                  ? filemtime($_SERVER['DOCUMENT_ROOT'].'/assets/css/app.css') : 1;
+    ?>
     <link href="https://fonts.googleapis.com/css2?family=<?= urlencode($activeFont) ?>:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/app.css">
+    <link rel="stylesheet" href="/assets/css/app.css?v=<?= $cssVer ?>">
     <?= \App\Models\Setting::cssVars() ?>
 </head>
 <body>
 <?php
 $currentPath = '/' . trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
-$user = \App\Auth\Auth::user();
+$user        = \App\Auth\Auth::user();
 ?>
-<div class="layout">
-    <aside class="sidebar sidebar-admin">
-        <div class="sidebar-brand">
-            <?php
-            $logoExt     = \App\Models\Setting::get('logo_ext') ?: 'png';
-            $logoFile    = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/logo.' . $logoExt;
-            $appName     = \App\Models\Setting::get('app_name') ?: 'Admin';
-            $logoLink    = \App\Models\Setting::get('logo_link_url') ?: '/admin';
-            $logoTarget  = str_starts_with($logoLink, 'http') ? ' target="_blank" rel="noopener"' : '';
-            ?>
+
+<!-- Top bar -->
+<header class="topbar">
+    <button class="menu-btn" id="menuBtn" aria-label="Toggle menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+    </button>
+    <a href="<?= \App\Core\Security::e($logoLink) ?>"<?= $logoTarget ?> class="topbar-brand">
+        <?php if (file_exists($logoFile)): ?>
+        <img src="/assets/img/logo.<?= $logoExt ?>?v=<?= filemtime($logoFile) ?>" alt="<?= \App\Core\Security::e($appName) ?>" class="topbar-logo-img">
+        <?php else: ?>
+        <span class="topbar-logo-text"><?= \App\Core\Security::e($appName) ?></span>
+        <?php endif; ?>
+    </a>
+    <div class="topbar-right">
+        <div class="topbar-avatar" style="background:#7c3aed;"><?= strtoupper(substr($user['name'] ?? 'A', 0, 1)) ?></div>
+        <span class="topbar-name"><?= \App\Core\Security::e($user['name'] ?? '') ?></span>
+        <a href="/logout" class="topbar-logout" title="Sign out">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </a>
+    </div>
+</header>
+
+<!-- Drawer overlay -->
+<div class="drawer-overlay" id="drawerOverlay"></div>
+
+<!-- Off-canvas navigation drawer -->
+<aside class="drawer" id="drawer">
+    <div class="drawer-header">
+        <a href="<?= \App\Core\Security::e($logoLink) ?>"<?= $logoTarget ?>>
             <?php if (file_exists($logoFile)): ?>
-            <a href="<?= \App\Core\Security::e($logoLink) ?>"<?= $logoTarget ?>><img src="/assets/img/logo.<?= $logoExt ?>?v=<?= filemtime($logoFile) ?>" alt="<?= \App\Core\Security::e($appName) ?>" class="sidebar-logo-img"></a>
+            <img src="/assets/img/logo.<?= $logoExt ?>?v=<?= filemtime($logoFile) ?>" alt="<?= \App\Core\Security::e($appName) ?>" class="drawer-logo-img">
             <?php else: ?>
-            <a href="<?= \App\Core\Security::e($logoLink) ?>"<?= $logoTarget ?> style="color:#fff;font-size:16px;font-weight:700;text-decoration:none;padding:8px 0;"><?= \App\Core\Security::e($appName) ?></a>
+            <span class="drawer-logo-text"><?= \App\Core\Security::e($appName) ?></span>
             <?php endif; ?>
-        </div>
-        <nav class="sidebar-nav">
-            <a href="/admin" class="nav-item <?= $currentPath === '/admin' ? 'active' : '' ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                Dashboard
-            </a>
-            <a href="/admin/customers" class="nav-item <?= str_starts_with($currentPath, '/admin/customers') ? 'active' : '' ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                Customers
-            </a>
-            <a href="/admin/tickets" class="nav-item <?= str_starts_with($currentPath, '/admin/tickets') ? 'active' : '' ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-                Support Tickets
-            </a>
-            <a href="/admin/faqs" class="nav-item <?= str_starts_with($currentPath, '/admin/faqs') ? 'active' : '' ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                FAQs
-            </a>
-            <a href="/admin/service-status" class="nav-item <?= str_starts_with($currentPath, '/admin/service-status') ? 'active' : '' ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                Service Status
-            </a>
-            <a href="/admin/xero" class="nav-item <?= str_starts_with($currentPath, '/admin/xero') ? 'active' : '' ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
-                Xero Sync
-            </a>
-            <a href="/admin/invoices" class="nav-item <?= str_starts_with($currentPath, '/admin/invoices') ? 'active' : '' ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                Invoices
-            </a>
-        </nav>
+        </a>
+        <button class="drawer-close" id="drawerClose" aria-label="Close menu">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+    </div>
 
-        <!-- Settings pinned above footer -->
-        <div style="padding:8px 12px;border-top:1px solid rgba(255,255,255,.06);">
-            <a href="/admin/settings" class="nav-item <?= str_starts_with($currentPath, '/admin/settings') ? 'active' : '' ?>">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                Settings
-            </a>
-        </div>
+    <nav class="drawer-nav">
+        <a href="/admin" class="nav-item <?= $currentPath === '/admin' ? 'active' : '' ?>">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+            Dashboard
+        </a>
+        <a href="/admin/customers" class="nav-item <?= str_starts_with($currentPath, '/admin/customers') ? 'active' : '' ?>">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Customers
+        </a>
+        <a href="/admin/tickets" class="nav-item <?= str_starts_with($currentPath, '/admin/tickets') ? 'active' : '' ?>">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Support Tickets
+        </a>
+        <a href="/admin/faqs" class="nav-item <?= str_starts_with($currentPath, '/admin/faqs') ? 'active' : '' ?>">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            FAQs
+        </a>
+        <a href="/admin/service-status" class="nav-item <?= str_starts_with($currentPath, '/admin/service-status') ? 'active' : '' ?>">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Service Status
+        </a>
+        <a href="/admin/xero" class="nav-item <?= str_starts_with($currentPath, '/admin/xero') ? 'active' : '' ?>">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>
+            Xero Sync
+        </a>
+        <a href="/admin/invoices" class="nav-item <?= str_starts_with($currentPath, '/admin/invoices') ? 'active' : '' ?>">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            Invoices
+        </a>
+        <div class="drawer-section-divider"></div>
+        <a href="/admin/settings" class="nav-item <?= str_starts_with($currentPath, '/admin/settings') ? 'active' : '' ?>">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            Settings
+        </a>
+    </nav>
 
-        <div class="sidebar-footer">
-            <div class="user-info">
-                <div class="user-avatar" style="background:#7c3aed;"><?= strtoupper(substr($user['name'] ?? 'A', 0, 1)) ?></div>
-                <div>
-                    <div class="user-name"><?= \App\Core\Security::e($user['name'] ?? '') ?></div>
-                    <div class="user-company" style="color:#f59e0b;">Administrator</div>
-                </div>
+    <div class="drawer-footer">
+        <div class="drawer-user-info">
+            <div class="drawer-avatar" style="background:#7c3aed;"><?= strtoupper(substr($user['name'] ?? 'A', 0, 1)) ?></div>
+            <div>
+                <div class="drawer-user-name"><?= \App\Core\Security::e($user['name'] ?? '') ?></div>
+                <div class="drawer-user-sub" style="color:#f59e0b;">Administrator</div>
             </div>
-            <a href="/logout" class="logout-btn" title="Sign out">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            </a>
         </div>
-    </aside>
+        <a href="/logout" class="drawer-logout" title="Sign out">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </a>
+    </div>
+</aside>
 
-    <main class="main-content">
-        <div class="content-inner">
-            <?php if (isset($flash)): ?>
-            <div class="alert alert-<?= \App\Core\Security::e($flash['type']) ?>">
-                <?= \App\Core\Security::e($flash['message']) ?>
-                <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
-            </div>
-            <?php endif; ?>
-            <?= $content ?>
+<!-- Main content -->
+<main class="main-content">
+    <div class="content-inner">
+        <?php if (isset($flash)): ?>
+        <div class="alert alert-<?= \App\Core\Security::e($flash['type']) ?>">
+            <?= \App\Core\Security::e($flash['message']) ?>
+            <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
         </div>
-    </main>
-</div>
+        <?php endif; ?>
+        <?= $content ?>
+    </div>
+</main>
 
 <script src="/assets/js/app.js"></script>
 </body>

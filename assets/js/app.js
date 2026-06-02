@@ -16,75 +16,57 @@ document.querySelectorAll('[data-confirm]').forEach(function (el) {
     });
 });
 
-// Highlight current nav item (already handled server-side, but fix edge cases)
+// Highlight current nav item
 var currentPath = window.location.pathname;
 document.querySelectorAll('.nav-item').forEach(function (link) {
-    if (link.getAttribute('href') === currentPath) {
-        link.classList.add('active');
-    }
+    if (link.getAttribute('href') === currentPath) link.classList.add('active');
 });
 
-// ── Mobile side drawer ───────────────────────────────────────────────────────
-// Only runs when viewport is narrow — on desktop this block never executes,
-// so there is no hamburger button or overlay in the DOM at all.
-if (window.innerWidth <= 1024) {
-    var sidebar = document.querySelector('.sidebar');
-    if (sidebar) {
-        // Clone the sidebar logo so the mobile bar shows the same branding
-        var sidebarLogoEl = sidebar.querySelector('.sidebar-logo-img');
-        var sidebarLogoText = sidebar.querySelector('.sidebar-brand a');
-        var logoHtml = sidebarLogoEl
-            ? '<img src="' + sidebarLogoEl.src + '" alt="' + sidebarLogoEl.alt + '" class="mobile-logo-img">'
-            : '<span class="mobile-logo-text">' + (sidebarLogoText ? sidebarLogoText.textContent.trim() : '') + '</span>';
+// ── Drawer ───────────────────────────────────────────────────────────────────
+(function () {
+    var drawer  = document.getElementById('drawer');
+    var overlay = document.getElementById('drawerOverlay');
+    var openBtn = document.getElementById('menuBtn');
+    var closeBtn = document.getElementById('drawerClose');
 
-        // Build and inject mobile top bar before everything else in <body>
-        var topBar = document.createElement('header');
-        topBar.className = 'mobile-header';
-        topBar.innerHTML =
-            '<button class="nav-toggle" aria-label="Open menu" id="navToggle">' +
-            '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">' +
-            '<line x1="3" y1="6" x2="21" y2="6"/>' +
-            '<line x1="3" y1="12" x2="21" y2="12"/>' +
-            '<line x1="3" y1="18" x2="21" y2="18"/>' +
-            '</svg></button>' +
-            '<div class="mobile-brand">' + logoHtml + '</div>';
-        document.body.insertBefore(topBar, document.body.firstChild);
+    if (!drawer || !overlay || !openBtn) return;
 
-        // Build and append overlay backdrop
-        var overlay = document.createElement('div');
-        overlay.className = 'nav-overlay';
-        document.body.appendChild(overlay);
-
-        // Make sidebar an off-canvas drawer
-        sidebar.classList.add('is-drawer');
-
-        function openDrawer() {
-            sidebar.classList.add('is-open');
-            overlay.classList.add('is-open');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeDrawer() {
-            sidebar.classList.remove('is-open');
-            overlay.classList.remove('is-open');
-            document.body.style.overflow = '';
-        }
-
-        document.getElementById('navToggle').addEventListener('click', openDrawer);
-        overlay.addEventListener('click', closeDrawer);
-
-        sidebar.querySelectorAll('.nav-item').forEach(function (link) {
-            link.addEventListener('click', closeDrawer);
-        });
+    function open() {
+        drawer.classList.add('is-open');
+        overlay.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
     }
-}
 
-// Auto-wrap tables for horizontal scroll on mobile
+    function close() {
+        drawer.classList.remove('is-open');
+        overlay.classList.remove('is-open');
+        document.body.style.overflow = '';
+    }
+
+    openBtn.addEventListener('click', open);
+    overlay.addEventListener('click', close);
+    if (closeBtn) closeBtn.addEventListener('click', close);
+
+    // Close when a nav link is tapped (page will navigate away)
+    drawer.querySelectorAll('.nav-item').forEach(function (link) {
+        link.addEventListener('click', close);
+    });
+}());
+
+// ── Tables: wrap for scroll + add landscape hint on small phones ─────────────
 document.querySelectorAll('.table').forEach(function (table) {
-    if (!table.parentElement.classList.contains('table-responsive')) {
-        var wrap = document.createElement('div');
-        wrap.className = 'table-responsive';
-        table.parentNode.insertBefore(wrap, table);
-        wrap.appendChild(table);
-    }
+    if (table.parentElement.classList.contains('table-responsive')) return;
+
+    // Landscape hint (shown via CSS only on very small screens)
+    var hint = document.createElement('p');
+    hint.className = 'landscape-hint';
+    hint.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="5" width="22" height="14" rx="2"/></svg>' +
+                     '&nbsp;Rotate device for a better view';
+
+    var wrap = document.createElement('div');
+    wrap.className = 'table-responsive';
+
+    table.parentNode.insertBefore(hint, table);
+    table.parentNode.insertBefore(wrap, table);
+    wrap.appendChild(table);
 });
