@@ -8,7 +8,7 @@
     <link rel="icon" href="/assets/img/favicon.<?= $favExt ?>" type="<?= $favExt === 'svg' ? 'image/svg+xml' : ($favExt === 'ico' ? 'image/x-icon' : 'image/png') ?>">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <?php
-    $fontUrl = \App\Models\Setting::googleFontUrl();
+    $fontUrl    = \App\Models\Setting::googleFontUrl();
     $activeFont = \App\Models\Setting::get('font_family') ?: 'Inter';
     ?>
     <link href="https://fonts.googleapis.com/css2?family=<?= urlencode($activeFont) ?>:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -17,23 +17,43 @@
 </head>
 <body>
 <?php
-$currentPath  = '/' . trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
-$user         = \App\Auth\Auth::user();
-$showInvoices = \App\Models\Setting::get('invoices_enabled') !== '0'
-             && ($user['show_invoices'] ?? 1);
-$logoLinkUrl  = \App\Models\Setting::get('logo_link_url') ?: '/dashboard';
+$currentPath    = '/' . trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
+$user           = \App\Auth\Auth::user();
+$showInvoices   = \App\Models\Setting::get('invoices_enabled') !== '0'
+               && ($user['show_invoices'] ?? 1);
+$logoLinkUrl    = \App\Models\Setting::get('logo_link_url') ?: '/dashboard';
 $logoLinkTarget = str_starts_with($logoLinkUrl, 'http') ? ' target="_blank" rel="noopener"' : '';
-$customLinks  = \App\Models\Setting::menuLinks();
+$customLinks    = \App\Models\Setting::menuLinks();
+$logoExt        = \App\Models\Setting::get('logo_ext') ?: 'png';
+$logoFile       = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/logo.' . $logoExt;
+$appName        = \App\Models\Setting::get('app_name') ?: 'Portal';
 ?>
+
+<!-- Mobile top bar: hidden on desktop, shown on mobile via CSS -->
+<header class="mobile-header">
+    <button class="nav-toggle" id="sidebarToggle" aria-label="Open menu">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <line x1="3" y1="12" x2="21" y2="12"/>
+            <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+    </button>
+    <div class="mobile-brand">
+        <?php if (file_exists($logoFile)): ?>
+        <img src="/assets/img/logo.<?= $logoExt ?>?v=<?= filemtime($logoFile) ?>" alt="<?= \App\Core\Security::e($appName) ?>" class="mobile-logo-img">
+        <?php else: ?>
+        <span class="mobile-logo-text"><?= \App\Core\Security::e($appName) ?></span>
+        <?php endif; ?>
+    </div>
+</header>
+
+<!-- Backdrop overlay — appears behind open drawer on mobile -->
+<div class="nav-overlay" id="navOverlay"></div>
+
 <div class="layout">
-    <!-- Sidebar -->
+    <!-- Sidebar: sticky rail on desktop, off-canvas drawer on mobile -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">
-            <?php
-            $logoExt  = \App\Models\Setting::get('logo_ext') ?: 'png';
-            $logoFile = $_SERVER['DOCUMENT_ROOT'] . '/assets/img/logo.' . $logoExt;
-            $appName  = \App\Models\Setting::get('app_name') ?: 'Portal';
-            ?>
             <?php if (file_exists($logoFile)): ?>
             <a href="<?= \App\Core\Security::e($logoLinkUrl) ?>"<?= $logoLinkTarget ?>><img src="/assets/img/logo.<?= $logoExt ?>?v=<?= filemtime($logoFile) ?>" alt="<?= \App\Core\Security::e($appName) ?>" class="sidebar-logo-img"></a>
             <?php else: ?>
@@ -91,18 +111,6 @@ $customLinks  = \App\Models\Setting::menuLinks();
 
     <!-- Main content -->
     <main class="main-content">
-        <header class="mobile-header">
-            <button class="hamburger" id="sidebarToggle" aria-label="Open menu">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-            </button>
-            <div>
-                <?php if (file_exists($logoFile)): ?>
-                <img src="/assets/img/logo.<?= $logoExt ?>?v=<?= filemtime($logoFile) ?>" alt="<?= \App\Core\Security::e($appName) ?>" class="mobile-logo-img">
-                <?php else: ?>
-                <span class="mobile-logo-text"><?= \App\Core\Security::e($appName) ?></span>
-                <?php endif; ?>
-            </div>
-        </header>
         <div class="content-inner">
             <?php if (isset($flash)): ?>
             <div class="alert alert-<?= \App\Core\Security::e($flash['type']) ?>">
@@ -115,7 +123,6 @@ $customLinks  = \App\Models\Setting::menuLinks();
     </main>
 </div>
 
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
 <script src="/assets/js/app.js"></script>
 </body>
 </html>

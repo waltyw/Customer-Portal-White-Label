@@ -1,54 +1,54 @@
 'use strict';
 
 // Auto-dismiss flash alerts after 6 seconds
-document.querySelectorAll('.alert').forEach(el => {
-    setTimeout(() => {
+document.querySelectorAll('.alert').forEach(function (el) {
+    setTimeout(function () {
         el.style.transition = 'opacity .4s';
         el.style.opacity = '0';
-        setTimeout(() => el.remove(), 400);
+        setTimeout(function () { el.remove(); }, 400);
     }, 6000);
 });
 
 // Confirm before destructive form submissions
-document.querySelectorAll('[data-confirm]').forEach(el => {
-    el.addEventListener('submit', e => {
+document.querySelectorAll('[data-confirm]').forEach(function (el) {
+    el.addEventListener('submit', function (e) {
         if (!confirm(el.dataset.confirm)) e.preventDefault();
     });
 });
 
 // Highlight current nav item (already handled server-side, but fix edge cases)
-const path = window.location.pathname;
-document.querySelectorAll('.nav-item').forEach(link => {
-    if (link.getAttribute('href') === path) {
+var currentPath = window.location.pathname;
+document.querySelectorAll('.nav-item').forEach(function (link) {
+    if (link.getAttribute('href') === currentPath) {
         link.classList.add('active');
     }
 });
 
-// Mobile sidebar toggle — IIFE avoids variable name conflicts with page scripts
+// Mobile side drawer
 (function () {
-    var navSidebar = document.getElementById('sidebar');
-    var navOverlay = document.getElementById('sidebarOverlay');
-    var navToggle  = document.getElementById('sidebarToggle');
+    var sidebar = document.getElementById('sidebar');
+    var overlay = document.getElementById('navOverlay');
+    var toggle  = document.getElementById('sidebarToggle');
 
-    if (!navSidebar || !navOverlay || !navToggle) return;
+    if (!sidebar || !overlay || !toggle) return;
 
-    function openNav() {
-        navSidebar.classList.add('is-open');
-        navOverlay.classList.add('is-open');
+    function openDrawer() {
+        sidebar.classList.add('is-open');
+        overlay.classList.add('is-open');
         document.body.style.overflow = 'hidden';
     }
 
-    function closeNav() {
-        navSidebar.classList.remove('is-open');
-        navOverlay.classList.remove('is-open');
+    function closeDrawer() {
+        sidebar.classList.remove('is-open');
+        overlay.classList.remove('is-open');
         document.body.style.overflow = '';
     }
 
-    navToggle.addEventListener('click', openNav);
-    navOverlay.addEventListener('click', closeNav);
+    toggle.addEventListener('click', openDrawer);
+    overlay.addEventListener('click', closeDrawer);
 
-    navSidebar.querySelectorAll('.nav-item').forEach(function (link) {
-        link.addEventListener('click', closeNav);
+    sidebar.querySelectorAll('.nav-item').forEach(function (link) {
+        link.addEventListener('click', closeDrawer);
     });
 }());
 
