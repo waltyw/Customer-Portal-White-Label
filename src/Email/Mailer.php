@@ -37,7 +37,7 @@ class Mailer
             $mail->AltBody = strip_tags($bodyHtml);
             $mail->send();
             return true;
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             error_log('Mailer error: ' . $e->getMessage());
             return false;
         }

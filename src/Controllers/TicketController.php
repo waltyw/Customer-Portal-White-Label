@@ -151,15 +151,19 @@ class TicketController
 
         $ext        = pathinfo($file['name'], PATHINFO_EXTENSION);
         $stored     = bin2hex(random_bytes(16)) . '.' . $ext;
-        $uploadDir  = dirname(__DIR__, 3) . '/storage/attachments/';
+        $uploadDir  = dirname(__DIR__, 2) . '/storage/attachments/';
 
         if (move_uploaded_file($file['tmp_name'], $uploadDir . $stored)) {
-            Ticket::saveAttachment($msgId, [
-                'stored_name'   => $stored,
-                'original_name' => $file['name'],
-                'mime_type'     => $mimeType,
-                'size'          => $file['size'],
-            ]);
+            try {
+                Ticket::saveAttachment($msgId, [
+                    'stored_name'   => $stored,
+                    'original_name' => $file['name'],
+                    'mime_type'     => $mimeType,
+                    'size'          => $file['size'],
+                ]);
+            } catch (\Throwable $e) {
+                error_log('Attachment save error: ' . $e->getMessage());
+            }
         }
     }
 }

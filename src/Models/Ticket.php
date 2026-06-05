@@ -100,10 +100,14 @@ class Ticket
 
     public static function attachments(int $messageId): array
     {
-        return DB::fetchAll(
-            'SELECT * FROM ticket_attachments WHERE ticket_message_id = ?',
-            [$messageId]
-        );
+        try {
+            return DB::fetchAll(
+                'SELECT * FROM ticket_attachments WHERE ticket_message_id = ?',
+                [$messageId]
+            );
+        } catch (\Throwable) {
+            return [];
+        }
     }
 
     public static function counts(): array

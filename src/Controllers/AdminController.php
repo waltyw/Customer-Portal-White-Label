@@ -406,11 +406,42 @@ class AdminController
 
         $messages = Ticket::messages($id, true);
 
+        $attachmentMap = [];
+        foreach ($messages as $msg) {
+            $atts = Ticket::attachments($msg['id']);
+            if ($atts) $attachmentMap[$msg['id']] = $atts;
+        }
+
         View::render('admin/ticket-view', [
-            'title'    => "Ticket #{$ticket['reference']}",
-            'ticket'   => $ticket,
-            'messages' => $messages,
+            'title'         => "Ticket #{$ticket['reference']}",
+            'ticket'        => $ticket,
+            'messages'      => $messages,
+            'attachmentMap' => $attachmentMap,
         ], 'admin');
+    }
+
+    public function serveAttachment(): void
+    {
+        Auth::requireAdmin();
+
+        $file = $_GET['file'] ?? '';
+        if (!preg_match('/^[a-f0-9]{32}\.[a-z0-9]{1,10}$/', $file)) {
+            http_response_code(400); exit('Invalid file.');
+        }
+
+        $row = \App\Core\DB::fetchOne('SELECT * FROM ticket_attachments WHERE filename = ?', [$file]);
+        if (!$row) { http_response_code(404); exit('Not found.'); }
+
+        $path = dirname(__DIR__, 2) . '/storage/attachments/' . $file;
+        if (!file_exists($path)) { http_response_code(404); exit('File not found on disk.'); }
+
+        $isImage = str_starts_with($row['mime_type'], 'image/');
+        header('Content-Type: ' . $row['mime_type']);
+        header('Content-Length: ' . filesize($path));
+        header('Content-Disposition: ' . ($isImage ? 'inline' : 'attachment') . '; filename="' . rawurlencode($row['original_filename']) . '"');
+        header('Cache-Control: private, max-age=3600');
+        readfile($path);
+        exit;
     }
 
     public function replyTicket(int $id): void
@@ -435,9 +466,10 @@ class AdminController
             Ticket::updateStatus($id, 'waiting_customer');
             $customer = User::find($ticket['user_id']);
             if ($customer) {
+                $adminUser = Auth::user();
                 Mailer::sendTicketReply(
                     $ticket,
-                    ['message' => $message, 'sender_name' => Auth::user()['name']],
+                    ['message' => $message, 'sender_name' => $adminUser['name'] ?? 'Support'],
                     $customer,
                     true
                 );

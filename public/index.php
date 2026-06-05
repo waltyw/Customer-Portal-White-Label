@@ -73,6 +73,7 @@ $routes = [
     'GET /admin/customers/create'       => [AdminController::class, 'createCustomer'],
     'POST /admin/customers/create'      => [AdminController::class, 'storeCustomer'],
     'GET /admin/tickets'          => [AdminController::class,    'tickets'],
+    'GET /admin/attachments'      => [AdminController::class,    'serveAttachment'],
     'GET /admin/faqs'             => [AdminController::class,    'faqs'],
     'POST /admin/faqs/create'     => [AdminController::class,    'storeFaq'],
     'GET /admin/service-status'   => [AdminController::class,    'serviceStatus'],
