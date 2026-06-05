@@ -408,7 +408,7 @@ class AdminController
 
         $attachmentMap = [];
         foreach ($messages as $msg) {
-            $atts = Ticket::attachments($msg['id']);
+            $atts = Ticket::attachments((int)$msg['id']);
             if ($atts) $attachmentMap[$msg['id']] = $atts;
         }
 
