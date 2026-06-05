@@ -94,11 +94,51 @@ class TicketController
         if (!$ticket) { http_response_code(404); die('Ticket not found.'); }
 
         $messages = Ticket::messages($id, false);
+
+        $attachmentMap = [];
+        foreach ($messages as $msg) {
+            $atts = Ticket::attachments((int)$msg['id']);
+            if ($atts) $attachmentMap[$msg['id']] = $atts;
+        }
+
         View::render('customer/ticket-view', [
-            'title'    => "Ticket #{$ticket['reference']}",
-            'ticket'   => $ticket,
-            'messages' => $messages,
+            'title'         => "Ticket #{$ticket['reference']}",
+            'ticket'        => $ticket,
+            'messages'      => $messages,
+            'attachmentMap' => $attachmentMap,
         ]);
+    }
+
+    public function serveAttachment(): void
+    {
+        Auth::requireAuth();
+
+        $file = $_GET['file'] ?? '';
+        if (!preg_match('/^[a-f0-9]{32}\.[a-z0-9]{1,10}$/', $file)) {
+            http_response_code(400); exit('Invalid file.');
+        }
+
+        $row = \App\Core\DB::fetchOne(
+            'SELECT ta.*, tm.ticket_id FROM ticket_attachments ta
+             JOIN ticket_messages tm ON ta.ticket_message_id = tm.id
+             WHERE ta.filename = ?',
+            [$file]
+        );
+        if (!$row) { http_response_code(404); exit('Not found.'); }
+
+        $ticket = Ticket::findForUser((int)$row['ticket_id'], Auth::id());
+        if (!$ticket) { http_response_code(403); exit('Access denied.'); }
+
+        $path = dirname(__DIR__, 2) . '/storage/attachments/' . $file;
+        if (!file_exists($path)) { http_response_code(404); exit('File not found on disk.'); }
+
+        $isImage = str_starts_with($row['mime_type'], 'image/');
+        header('Content-Type: ' . $row['mime_type']);
+        header('Content-Length: ' . filesize($path));
+        header('Content-Disposition: ' . ($isImage ? 'inline' : 'attachment') . '; filename="' . rawurlencode($row['original_filename']) . '"');
+        header('Cache-Control: private, max-age=3600');
+        readfile($path);
+        exit;
     }
 
     public function reply(int $id): void

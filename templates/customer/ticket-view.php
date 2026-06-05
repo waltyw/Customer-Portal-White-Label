@@ -25,6 +25,22 @@
                 <span class="message-time"><?= date('j M Y, H:i', strtotime($msg['created_at'])) ?></span>
             </div>
             <div class="message-text"><?= nl2br(Security::e($msg['message'])) ?></div>
+            <?php if (!empty($attachmentMap[$msg['id']])): ?>
+            <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start;">
+                <?php foreach ($attachmentMap[$msg['id']] as $att): ?>
+                <?php $isImage = str_starts_with($att['mime_type'], 'image/'); ?>
+                <?php if ($isImage): ?>
+                <a href="/tickets/attachments?file=<?= urlencode($att['filename']) ?>" target="_blank" title="<?= Security::e($att['original_filename']) ?>">
+                    <img src="/tickets/attachments?file=<?= urlencode($att['filename']) ?>" alt="<?= Security::e($att['original_filename']) ?>" style="max-width:220px;max-height:160px;border-radius:6px;border:1px solid #e2e8f0;display:block;">
+                </a>
+                <?php else: ?>
+                <a href="/tickets/attachments?file=<?= urlencode($att['filename']) ?>" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;font-size:13px;color:#2563eb;text-decoration:none;">
+                    &#128206; <?= Security::e($att['original_filename']) ?>
+                </a>
+                <?php endif; ?>
+                <?php endforeach; ?>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
     <?php endforeach; ?>

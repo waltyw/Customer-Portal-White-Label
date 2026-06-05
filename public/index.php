@@ -52,6 +52,7 @@ $routes = [
     'GET /tickets'                => [TicketController::class,   'index'],
     'GET /tickets/create'         => [TicketController::class,   'create'],
     'POST /tickets/create'        => [TicketController::class,   'store'],
+    'GET /tickets/attachments'    => [TicketController::class,   'serveAttachment'],
     'GET /invoices'               => [InvoiceController::class,  'index'],
     'GET /account'                => [AccountController::class,  'index'],
     'POST /account'               => [AccountController::class,  'update'],
