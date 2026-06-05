@@ -105,7 +105,8 @@ class Ticket
                 'SELECT * FROM ticket_attachments WHERE ticket_message_id = ?',
                 [$messageId]
             );
-        } catch (\Throwable) {
+        } catch (\Throwable $e) {
+            error_log('Ticket attachments query error: ' . $e->getMessage());
             return [];
         }
     }
