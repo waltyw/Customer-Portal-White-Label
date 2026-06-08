@@ -464,7 +464,7 @@ class AdminController
 
         if (!$isInternal) {
             Ticket::updateStatus($id, 'waiting_customer');
-            $customer = User::find($ticket['user_id']);
+            $customer = User::find((int) $ticket['user_id']);
             if ($customer) {
                 $adminUser = Auth::user();
                 Mailer::sendTicketReply(
