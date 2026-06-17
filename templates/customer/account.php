@@ -91,6 +91,38 @@
         </div>
     </div>
 
+    <!-- Notification Emails -->
+    <div class="card">
+        <div class="card-header"><h2>Notification Emails</h2></div>
+        <div class="card-body">
+            <p style="color:#64748b;font-size:14px;margin-bottom:16px;">Add up to two extra email addresses to receive copies of ticket reply notifications. Your main account email will always be notified.</p>
+            <?php
+            $notifyEmails = [];
+            if (!empty($user['notification_emails'])) {
+                $decoded = json_decode($user['notification_emails'], true);
+                if (is_array($decoded)) $notifyEmails = $decoded;
+            }
+            ?>
+            <form method="POST" action="/account/notification-emails">
+                <?= Security::csrfField() ?>
+                <div class="form-group">
+                    <label>Additional Email 1</label>
+                    <input type="email" name="notify_email_1"
+                           value="<?= Security::e($notifyEmails[0] ?? '') ?>"
+                           placeholder="colleague@yourdomain.com">
+                </div>
+                <div class="form-group">
+                    <label>Additional Email 2</label>
+                    <input type="email" name="notify_email_2"
+                           value="<?= Security::e($notifyEmails[1] ?? '') ?>"
+                           placeholder="manager@yourdomain.com">
+                </div>
+                <small style="color:#64748b;font-size:12px;display:block;margin-bottom:16px;">Leave blank to remove. These addresses receive ticket reply notifications only.</small>
+                <button type="submit" class="btn btn-primary">Save Notification Emails</button>
+            </form>
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-header"><h2>Change Password</h2></div>
         <div class="card-body">

@@ -71,7 +71,7 @@
                 </div>
                 <div class="form-group">
                     <label>Client Secret</label>
-                    <input type="password" name="xero_client_secret" placeholder="Paste your Xero Client Secret" autocomplete="new-password">
+                    <input type="text" name="xero_client_secret" placeholder="Paste your Xero Client Secret" autocomplete="off" style="font-family:monospace;">
                     <small style="color:#64748b;font-size:12px;">Leave blank to keep the existing secret.</small>
                 </div>
                 <div class="form-group">

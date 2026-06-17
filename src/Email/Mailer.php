@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Email;
 
 use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
 use PHPMailer\PHPMailer\Exception;
 
 class Mailer
@@ -60,7 +59,22 @@ class Mailer
         <p><a href="{$_ENV['APP_URL']}/tickets/{$ticket['id']}" style="background:#2563eb;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;display:inline-block;">View Ticket</a></p>
         HTML;
 
-        return self::send($recipient['email'], $recipient['name'], "Re: [{$ref}] {$subj}", $html);
+        $sent = self::send($recipient['email'], $recipient['name'], "Re: [{$ref}] {$subj}", $html);
+
+        // When an admin replies, also notify any additional email addresses the customer has set
+        if ($isAdmin && !empty($recipient['notification_emails'])) {
+            $extras = json_decode($recipient['notification_emails'], true);
+            if (is_array($extras)) {
+                foreach ($extras as $extra) {
+                    $extra = trim($extra);
+                    if ($extra && filter_var($extra, FILTER_VALIDATE_EMAIL)) {
+                        self::send($extra, $recipient['name'], "Re: [{$ref}] {$subj}", $html);
+                    }
+                }
+            }
+        }
+
+        return $sent;
     }
 
     public static function sendInvoiceReady(array $invoice, array $user): bool
@@ -108,6 +122,11 @@ class Mailer
     {
         $appName = htmlspecialchars($_ENV['APP_NAME'] ?? 'Customer Portal');
         $appUrl  = htmlspecialchars($_ENV['APP_URL'] ?? '');
+        $logoUrl = htmlspecialchars($_ENV['APP_LOGO_URL'] ?? '');
+
+        $headerContent = $logoUrl
+            ? "<img src=\"{$logoUrl}\" alt=\"{$appName}\" style=\"max-height:48px;max-width:200px;display:block;\">"
+            : "<h1 style=\"margin:0;color:#fff;font-size:20px;font-weight:600;\">{$appName}</h1>";
 
         return <<<HTML
         <!DOCTYPE html>
@@ -118,7 +137,7 @@ class Mailer
                 <tr><td align="center">
                     <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.1);">
                         <tr><td style="background:#0f172a;padding:24px 32px;">
-                            <h1 style="margin:0;color:#fff;font-size:20px;font-weight:600;">{$appName}</h1>
+                            {$headerContent}
                         </td></tr>
                         <tr><td style="padding:32px;color:#374151;font-size:15px;line-height:1.6;">
                             {$body}

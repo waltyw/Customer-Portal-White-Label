@@ -1,5 +1,4 @@
-<?php
-use App\Core\Security;
+<?php use App\Core\Security;
 $websites = $websites ?? [];
 $customerWebsiteUrl = $customer['website_url'] ?? null;
 ?>
@@ -71,6 +70,22 @@ $customerWebsiteUrl = $customer['website_url'] ?? null;
                 </td></tr>
                 <tr><td style="color:#64748b;padding:6px 0;">Account Status</td><td><span class="badge <?= $customer['is_active'] ? 'badge-active' : 'badge-inactive' ?>"><?= $customer['is_active'] ? 'Active' : 'Inactive' ?></span></td></tr>
                 <tr><td style="color:#64748b;padding:6px 0;">Invoices</td><td><span class="badge <?= ($customer['show_invoices'] ?? 1) ? 'badge-active' : 'badge-inactive' ?>"><?= ($customer['show_invoices'] ?? 1) ? 'Visible to customer' : 'Hidden from customer' ?></span></td></tr>
+                <?php
+                $notifyEmails = [];
+                if (!empty($customer['notification_emails'])) {
+                    $decoded = json_decode($customer['notification_emails'], true);
+                    if (is_array($decoded)) $notifyEmails = $decoded;
+                }
+                ?>
+                <tr><td style="color:#64748b;padding:6px 0;vertical-align:top;">Notification Emails</td><td>
+                    <?php if ($notifyEmails): ?>
+                        <?php foreach ($notifyEmails as $ne): ?>
+                        <div><?= Security::e($ne) ?></div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <span style="color:#94a3b8;">None set</span>
+                    <?php endif; ?>
+                </td></tr>
                 <tr><td style="color:#64748b;padding:6px 0;">Member Since</td><td><?= date('j F Y', strtotime($customer['created_at'])) ?></td></tr>
             </table>
         </div>
@@ -100,6 +115,17 @@ $customerWebsiteUrl = $customer['website_url'] ?? null;
                             <input type="text" name="website_url" value="<?= Security::e($customerWebsiteUrl ?? '') ?>" placeholder="https://theirdomain.co.uk">
                         </div>
                     </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Notification Email 1 <span class="hint">(optional)</span></label>
+                            <input type="email" name="notify_email_1" value="<?= Security::e($notifyEmails[0] ?? '') ?>" placeholder="colleague@company.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Notification Email 2 <span class="hint">(optional)</span></label>
+                            <input type="email" name="notify_email_2" value="<?= Security::e($notifyEmails[1] ?? '') ?>" placeholder="manager@company.com">
+                        </div>
+                    </div>
+                    <small style="color:#64748b;font-size:12px;padding:0 0 8px;display:block;">These addresses receive copies of ticket reply notifications. Leave blank to remove.</small>
                 </div>
                 <div style="padding:12px 20px;border-top:1px solid #f1f5f9;display:flex;gap:10px;">
                     <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
@@ -110,7 +136,7 @@ $customerWebsiteUrl = $customer['website_url'] ?? null;
     </div>
 
     <div class="card p-0">
-        <div class="card-header" style="padding:16px 20px;"><h2>Recent Tickets</h2><a href="/admin/customers/<?= $customer['id'] ?>" class="btn btn-sm btn-primary" style="margin-left:auto;">+ New Ticket</a></div>
+        <div class="card-header" style="padding:16px 20px;"><h2>Recent Tickets</h2><a href="/admin/tickets/create?customer=<?= $customer['id'] ?>" class="btn btn-sm btn-primary" style="margin-left:auto;">+ New Ticket</a></div>
         <?php if (empty($tickets)): ?>
         <div class="empty-state">No tickets</div>
         <?php else: ?>

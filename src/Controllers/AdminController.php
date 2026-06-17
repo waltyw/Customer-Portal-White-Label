@@ -141,6 +141,14 @@ class AdminController
             'website_url' => trim($_POST['website_url'] ?? ''),
         ]);
 
+        $notifyEmails = array_filter([
+            trim($_POST['notify_email_1'] ?? ''),
+            trim($_POST['notify_email_2'] ?? ''),
+        ]);
+        if ($notifyEmails) {
+            User::saveNotificationEmails($userId, array_values($notifyEmails));
+        }
+
         Mailer::sendWelcome(['email' => $email, 'name' => $name], $tempPassword);
 
         Security::flash('success', "Customer {$name} created. Welcome email sent.");
@@ -309,6 +317,11 @@ class AdminController
             'is_active'   => 1,
         ]);
 
+        User::saveNotificationEmails($id, array_values(array_filter([
+            trim($_POST['notify_email_1'] ?? ''),
+            trim($_POST['notify_email_2'] ?? ''),
+        ])));
+
         Security::flash('success', 'Customer details updated.');
         Security::redirect('/admin/customers/' . $id);
     }
@@ -396,6 +409,52 @@ class AdminController
             'tickets' => Ticket::all($filters),
             'filters' => $filters,
         ], 'admin');
+    }
+
+    public function createTicket(): void
+    {
+        Auth::requireAdmin();
+        $customerId = (int)($_GET['customer'] ?? 0);
+        $customer   = $customerId ? User::find($customerId) : null;
+
+        View::render('admin/ticket-create', [
+            'title'     => 'New Ticket',
+            'customer'  => $customer,
+            'customers' => User::customers(),
+        ], 'admin');
+    }
+
+    public function storeTicket(): void
+    {
+        Auth::requireAdmin();
+        Security::checkCsrf();
+
+        $customerId = (int)($_POST['customer_id'] ?? 0);
+        $subject    = trim($_POST['subject'] ?? '');
+        $message    = trim($_POST['message'] ?? '');
+        $priority   = $_POST['priority'] ?? 'medium';
+        $category   = $_POST['category'] ?? 'general';
+
+        if (!$customerId || !$subject || !$message) {
+            Security::flash('error', 'Customer, subject and message are all required.');
+            Security::redirect('/admin/tickets/create?customer=' . $customerId);
+        }
+
+        $customer = User::find($customerId);
+        if (!$customer || $customer['role'] !== 'customer') {
+            Security::flash('error', 'Customer not found.');
+            Security::redirect('/admin/tickets/create');
+        }
+
+        if (!in_array($priority, ['low', 'medium', 'high', 'urgent'])) $priority = 'medium';
+        if (!in_array($category, ['billing', 'technical', 'general', 'account'])) $category = 'general';
+
+        $adminId  = Auth::id();
+        $ticketId = Ticket::create($customerId, compact('subject', 'priority', 'category'));
+        Ticket::addMessage($ticketId, $adminId, $message);
+
+        Security::flash('success', "Ticket created for {$customer['name']}.");
+        Security::redirect('/admin/tickets/' . $ticketId);
     }
 
     public function viewTicket(int $id): void

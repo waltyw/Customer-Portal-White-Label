@@ -84,6 +84,31 @@ class User
         return $url ?: null;
     }
 
+    public static function saveNotificationEmails(int $id, array $emails): void
+    {
+        // Validate, deduplicate, cap at 2
+        $clean = [];
+        foreach ($emails as $email) {
+            $email = strtolower(trim($email));
+            if ($email && filter_var($email, FILTER_VALIDATE_EMAIL) && !in_array($email, $clean)) {
+                $clean[] = $email;
+                if (count($clean) === 2) break;
+            }
+        }
+        DB::execute(
+            'UPDATE users SET notification_emails = ? WHERE id = ?',
+            [$clean ? json_encode($clean) : null, $id]
+        );
+    }
+
+    public static function getNotificationEmails(int $id): array
+    {
+        $row = DB::fetchOne('SELECT notification_emails FROM users WHERE id = ?', [$id]);
+        if (!$row || !$row['notification_emails']) return [];
+        $decoded = json_decode($row['notification_emails'], true);
+        return is_array($decoded) ? $decoded : [];
+    }
+
     public static function toggleActive(int $id): void
     {
         DB::execute('UPDATE users SET is_active = NOT is_active WHERE id = ?', [$id]);

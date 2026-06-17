@@ -31,22 +31,28 @@ class XeroController
         Auth::requireAdmin();
         Security::checkCsrf();
 
-        $clientId = trim($_POST['xero_client_id'] ?? '');
-        $secret   = trim($_POST['xero_client_secret'] ?? '');
+        try {
+            $clientId = trim($_POST['xero_client_id'] ?? '');
+            $secret   = trim($_POST['xero_client_secret'] ?? '');
 
-        if ($clientId) {
-            Setting::set('xero_client_id', $clientId);
+            if ($clientId) {
+                Setting::set('xero_client_id', $clientId);
+            }
+
+            if ($secret) {
+                Setting::set('xero_client_secret', $secret);
+            }
+
+            $appUrl = $_ENV['APP_URL'] ?? '';
+            Setting::set('xero_redirect_uri', rtrim($appUrl, '/') . '/admin/xero/callback');
+
+            $secretStatus = $secret ? 'Client ID and Secret saved.' : 'Client ID saved. Existing secret kept.';
+            Security::flash('success', $secretStatus . ' Now click Connect to Xero.');
+        } catch (\Throwable $e) {
+            error_log('XeroController::saveConfig error: ' . $e->getMessage());
+            Security::flash('error', 'Save failed: ' . $e->getMessage());
         }
 
-        // Only overwrite the secret if a new one was actually typed
-        if ($secret) {
-            Setting::set('xero_client_secret', $secret);
-        }
-
-        Setting::set('xero_redirect_uri', rtrim($_ENV['APP_URL'], '/') . '/admin/xero/callback');
-
-        $secretStatus = $secret ? 'Client ID and Secret saved.' : 'Client ID saved. Existing secret kept.';
-        Security::flash('success', $secretStatus . ' Now click Connect to Xero.');
         Security::redirect('/admin/xero');
     }
 
@@ -104,83 +110,107 @@ class XeroController
         }
 
         try {
-            $xeroInvoices = XeroAPI::getAllInvoices();
-        } catch (\Exception $e) {
+            $xeroInvoices   = XeroAPI::getAllInvoices();
+            $contactEmailMap = XeroAPI::getContactEmailMap();
+        } catch (\Throwable $e) {
+            error_log('XeroController::sync API error: ' . $e->getMessage());
             Security::flash('error', 'Xero API error: ' . $e->getMessage());
             Security::redirect('/admin/xero');
         }
 
-        $imported = 0;
-        $updated  = 0;
-        $skipped  = 0;
+        $imported       = 0;
+        $updated        = 0;
+        $skipped        = 0;
+        $noEmail        = 0;
+        $unmatchedEmails= [];
 
         foreach ($xeroInvoices as $xi) {
-            $email    = strtolower(trim($xi['Contact']['EmailAddress'] ?? ''));
-            $xeroId   = $xi['InvoiceID'] ?? '';
-            $invoiceNo= $xi['InvoiceNumber'] ?? '';
+            try {
+                $contactId = $xi['Contact']['ContactID'] ?? '';
+                $email     = $contactEmailMap[$contactId] ?? strtolower(trim($xi['Contact']['EmailAddress'] ?? ''));
+                $xeroId    = $xi['InvoiceID'] ?? '';
+                $invoiceNo = $xi['InvoiceNumber'] ?? '';
 
-            if (!$email || !$xeroId) { $skipped++; continue; }
+                if (!$xeroId) { $skipped++; continue; }
 
-            $customer = User::findByEmail($email);
-            if (!$customer) { $skipped++; continue; }
+                if (!$email) {
+                    $noEmail++;
+                    $skipped++;
+                    continue;
+                }
 
-            // Map Xero status → our status
-            $status = match($xi['Status'] ?? '') {
-                'AUTHORISED' => 'authorised',
-                'PAID'       => 'paid',
-                'VOIDED'     => 'voided',
-                default      => 'authorised',
-            };
+                $customer = User::findByEmail($email);
+                if (!$customer) {
+                    $unmatchedEmails[$email] = true;
+                    $skipped++;
+                    continue;
+                }
 
-            $lineItems = array_map(fn($li) => [
-                'description' => $li['Description'] ?? '',
-                'qty'         => (float)($li['Quantity'] ?? 1),
-                'unit_price'  => (float)($li['UnitAmount'] ?? 0),
-            ], $xi['LineItems'] ?? []);
+                $status = match($xi['Status'] ?? '') {
+                    'AUTHORISED' => 'authorised',
+                    'PAID'       => 'paid',
+                    'VOIDED'     => 'voided',
+                    default      => 'authorised',
+                };
 
-            $issueDate = self::parseXeroDate($xi['DateString'] ?? '');
-            $dueDate   = self::parseXeroDate($xi['DueDateString'] ?? '');
+                $lineItems = array_map(fn($li) => [
+                    'description' => $li['Description'] ?? '',
+                    'qty'         => (float)($li['Quantity'] ?? 1),
+                    'unit_price'  => (float)($li['UnitAmount'] ?? 0),
+                ], $xi['LineItems'] ?? []);
 
-            // Check if already imported
-            $existing = \App\Core\DB::fetchOne(
-                'SELECT id FROM invoices WHERE xero_invoice_id = ?', [$xeroId]
-            );
+                $issueDate = self::parseXeroDate($xi['DateString'] ?? '');
+                $dueDate   = self::parseXeroDate($xi['DueDateString'] ?? '');
 
-            if ($existing) {
-                // Update status and amounts
-                \App\Core\DB::execute(
-                    'UPDATE invoices SET status=?, amount_paid=?, amount_due=?, updated_at=NOW() WHERE xero_invoice_id=?',
-                    [$status, (float)($xi['AmountPaid'] ?? 0), (float)($xi['AmountDue'] ?? 0), $xeroId]
+                $existing = \App\Core\DB::fetchOne(
+                    'SELECT id FROM invoices WHERE xero_invoice_id = ?', [$xeroId]
                 );
-                $updated++;
-            } else {
-                // Create new
-                \App\Core\DB::execute(
-                    'INSERT INTO invoices (user_id, xero_invoice_id, invoice_number, status, subtotal, vat_amount, total, amount_paid, amount_due, currency, issue_date, due_date, line_items)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                    [
-                        $customer['id'],
-                        $xeroId,
-                        $invoiceNo,
-                        $status,
-                        (float)($xi['SubTotal']   ?? 0),
-                        (float)($xi['TotalTax']   ?? 0),
-                        (float)($xi['Total']      ?? 0),
-                        (float)($xi['AmountPaid'] ?? 0),
-                        (float)($xi['AmountDue']  ?? 0),
-                        $xi['CurrencyCode']  ?? 'GBP',
-                        $issueDate,
-                        $dueDate,
-                        json_encode($lineItems),
-                    ]
-                );
-                $imported++;
+
+                if ($existing) {
+                    \App\Core\DB::execute(
+                        'UPDATE invoices SET status=?, amount_paid=?, amount_due=?, updated_at=NOW() WHERE xero_invoice_id=?',
+                        [$status, (float)($xi['AmountPaid'] ?? 0), (float)($xi['AmountDue'] ?? 0), $xeroId]
+                    );
+                    $updated++;
+                } else {
+                    \App\Core\DB::execute(
+                        'INSERT INTO invoices (user_id, xero_invoice_id, invoice_number, status, subtotal, vat_amount, total, amount_paid, amount_due, currency, issue_date, due_date, line_items)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                        [
+                            $customer['id'],
+                            $xeroId,
+                            $invoiceNo,
+                            $status,
+                            (float)($xi['SubTotal']   ?? 0),
+                            (float)($xi['TotalTax']   ?? 0),
+                            (float)($xi['Total']      ?? 0),
+                            (float)($xi['AmountPaid'] ?? 0),
+                            (float)($xi['AmountDue']  ?? 0),
+                            $xi['CurrencyCode']  ?? 'GBP',
+                            $issueDate,
+                            $dueDate,
+                            json_encode($lineItems),
+                        ]
+                    );
+                    $imported++;
+                }
+            } catch (\Throwable $e) {
+                error_log('XeroController::sync invoice error (' . ($xi['InvoiceNumber'] ?? '?') . '): ' . $e->getMessage());
+                $skipped++;
             }
         }
 
         Setting::set('xero_last_sync', date('Y-m-d H:i:s'));
 
-        Security::flash('success', "Sync complete — {$imported} imported, {$updated} updated, {$skipped} skipped (no matching customer).");
+        $msg = "Sync complete — {$imported} imported, {$updated} updated, {$skipped} skipped.";
+        if ($noEmail) {
+            $msg .= " {$noEmail} Xero contact(s) have no email address set — open those contacts in Xero and add an email.";
+        }
+        if ($unmatchedEmails) {
+            $list = implode(', ', array_keys($unmatchedEmails));
+            $msg .= " These Xero emails have no matching portal user: {$list}";
+        }
+        Security::flash($imported + $updated > 0 ? 'success' : 'warning', $msg);
         Security::redirect('/admin/xero');
     }
 

@@ -46,6 +46,22 @@ class AccountController
         Security::redirect('/account');
     }
 
+    public function saveNotificationEmails(): void
+    {
+        Auth::requireAuth();
+        Security::checkCsrf();
+
+        $emails = array_filter([
+            trim($_POST['notify_email_1'] ?? ''),
+            trim($_POST['notify_email_2'] ?? ''),
+        ]);
+
+        User::saveNotificationEmails(Auth::id(), array_values($emails));
+
+        Security::flash('success', 'Notification email addresses saved.');
+        Security::redirect('/account');
+    }
+
     public function update(): void
     {
         Auth::requireAuth();

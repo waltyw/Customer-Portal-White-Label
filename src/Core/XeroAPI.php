@@ -94,6 +94,31 @@ class XeroAPI
         return $all;
     }
 
+    /**
+     * Returns a map of ContactID => EmailAddress for all contacts.
+     * Needed because the /Invoices endpoint omits EmailAddress from the Contact object.
+     */
+    public static function getContactEmailMap(): array
+    {
+        $map  = [];
+        $page = 1;
+        do {
+            $contacts = self::apiGet('/Contacts', [
+                'page'              => $page,
+                'includeArchived'   => 'false',
+            ])['Contacts'] ?? [];
+
+            foreach ($contacts as $c) {
+                if (!empty($c['ContactID']) && !empty($c['EmailAddress'])) {
+                    $map[$c['ContactID']] = strtolower(trim($c['EmailAddress']));
+                }
+            }
+            $page++;
+        } while (count($contacts) === 100);
+
+        return $map;
+    }
+
     // ── Internal ─────────────────────────────────────────────────────────────
 
     private static function getAccessToken(): string
@@ -129,10 +154,18 @@ class XeroAPI
             CURLOPT_TIMEOUT => 30,
         ]);
 
-        $body = curl_exec($ch);
+        $body   = curl_exec($ch);
+        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        return json_decode($body, true) ?? [];
+        $data = json_decode($body, true) ?? [];
+
+        if ($status >= 400) {
+            $detail = $data['Detail'] ?? $data['Message'] ?? $body;
+            throw new \RuntimeException("Xero API error {$status}: {$detail}");
+        }
+
+        return $data;
     }
 
     private static function getTenants(string $accessToken): array

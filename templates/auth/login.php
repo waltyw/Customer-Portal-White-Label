@@ -46,7 +46,15 @@
                     Password
                     <a href="/forgot-password" class="label-link">Forgot password?</a>
                 </label>
-                <input type="password" id="password" name="password" required placeholder="••••••••••">
+                <div style="position:relative;">
+                    <input type="password" id="password" name="password" required placeholder="••••••••••" style="padding-right:44px;">
+                    <button type="button" onclick="togglePassword()" id="toggle-pw"
+                        style="position:absolute;right:0;top:0;bottom:0;width:40px;background:none;border:none;cursor:pointer;color:#94a3b8;display:flex;align-items:center;justify-content:center;"
+                        title="Show password" aria-label="Show password">
+                        <svg id="icon-eye" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <svg id="icon-eye-off" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                    </button>
+                </div>
             </div>
             <button type="submit" class="btn btn-primary btn-block">Sign In</button>
         </form>
@@ -55,5 +63,24 @@
         Need help? <a href="mailto:<?= \App\Core\Security::e($_ENV['SMTP_FROM_EMAIL'] ?? '') ?>">Contact support</a>
     </p>
 </div>
+<script>
+function togglePassword() {
+    var input = document.getElementById('password');
+    var eyeOn  = document.getElementById('icon-eye');
+    var eyeOff = document.getElementById('icon-eye-off');
+    var btn    = document.getElementById('toggle-pw');
+    if (input.type === 'password') {
+        input.type = 'text';
+        eyeOn.style.display  = 'none';
+        eyeOff.style.display = '';
+        btn.title = btn.setAttribute('aria-label', 'Hide password') || 'Hide password';
+    } else {
+        input.type = 'password';
+        eyeOn.style.display  = '';
+        eyeOff.style.display = 'none';
+        btn.title = btn.setAttribute('aria-label', 'Show password') || 'Show password';
+    }
+}
+</script>
 </body>
 </html>
