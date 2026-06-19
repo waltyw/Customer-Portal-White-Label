@@ -47,3 +47,4 @@ if (($_ENV['APP_DEBUG'] ?? 'false') === 'true') {
 }
 
 date_default_timezone_set('Europe/London');
+
